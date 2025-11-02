@@ -339,19 +339,19 @@ export default function AdminPage() {
               <strong>{t("defaultTargetEmailWarning")}</strong>
             </div>
           )}
-          <form onSubmit={handleUpdateDefaultEmail} className="flex gap-4">
+          <form onSubmit={handleUpdateDefaultEmail} className="flex flex-wrap gap-4">
             <input
               type="email"
               value={defaultEmailInput}
               onChange={(e) => setDefaultEmailInput(e.target.value)}
-              className="flex-1 rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
+              className="flex-1 min-w-0 rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
               placeholder={t("defaultTargetEmailPlaceholder")}
               maxLength={500}
               required
             />
             <button
               type="submit"
-              className="rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+              className="w-full sm:w-auto rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
             >
               {tCommon("update")}
             </button>
@@ -463,10 +463,10 @@ export default function AdminPage() {
 
         {/* Surveys List */}
         <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
-          <div className="mb-4 flex items-center justify-between">
+          <div className="mb-4 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <h2 className="text-2xl font-bold">{t("surveys")}</h2>
             {!showAddForm && (
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={handleDownloadConfig}
                   className="rounded-lg bg-blue-500/30 px-4 py-2 font-medium text-white hover:bg-blue-500/40 focus:outline-none focus:ring-2 focus:ring-blue-500/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
@@ -525,7 +525,7 @@ export default function AdminPage() {
                         )}
                       </td>
                       <td className="px-4 py-2">
-                        <div className="flex gap-2">
+                        <div className="flex flex-wrap gap-2">
                           <button
                             onClick={() => handleEdit(survey)}
                             className="rounded bg-blue-500/20 px-3 py-1 text-sm text-blue-300 hover:bg-blue-500/30"

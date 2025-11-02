@@ -62,8 +62,9 @@ export async function saveSurveysConfig(
 export async function getSurveysConfigFromFile(): Promise<SurveysConfig> {
   // Ensure tmp file exists before reading (copy from original if needed)
   await ensureTmpFileExists();
-  const filePath = await getSurveysJsonPath(true);
-  const content = await fs.readFile(filePath, "utf-8");
+  // Always read from /tmp/surveys.json (the runtime config), never fall back to original
+  const tmpPath = "/tmp/surveys.json";
+  const content = await fs.readFile(tmpPath, "utf-8");
   return JSON.parse(content) as SurveysConfig;
 }
 
