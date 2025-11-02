@@ -1,6 +1,6 @@
 "use client";
 
-import { use, useState, useEffect } from "react";
+import { use, useState, useEffect, useRef } from "react";
 import { notFound } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { Survey } from "~/lib/surveys";
@@ -14,13 +14,50 @@ function Tooltip({
   text: string;
   children: React.ReactNode;
 }): React.ReactElement {
+  const [isVisible, setIsVisible] = useState(false);
+  const tooltipRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent | TouchEvent) {
+      if (
+        isVisible &&
+        tooltipRef.current &&
+        !tooltipRef.current.contains(event.target as Node)
+      ) {
+        setIsVisible(false);
+      }
+    }
+
+    if (isVisible) {
+      document.addEventListener("mousedown", handleClickOutside);
+      document.addEventListener("touchstart", handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+      document.removeEventListener("touchstart", handleClickOutside);
+    };
+  }, [isVisible]);
+
   return (
-    <div className="group relative inline-flex items-center">
-      {children}
-      <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white opacity-0 shadow-lg transition-opacity group-hover:opacity-100 pointer-events-none z-10">
-        {text}
-        <span className="absolute left-1/2 top-full -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
-      </span>
+    <div ref={tooltipRef} className="relative inline-flex items-center">
+      <div
+        onMouseEnter={() => setIsVisible(true)}
+        onMouseLeave={() => setIsVisible(false)}
+        onTouchStart={(e) => {
+          e.preventDefault();
+          setIsVisible(!isVisible);
+        }}
+        className="cursor-help"
+      >
+        {children}
+      </div>
+      {isVisible && (
+        <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white shadow-lg z-10 pointer-events-none">
+          {text}
+          <span className="absolute left-1/2 top-full -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
+        </span>
+      )}
     </div>
   );
 }
