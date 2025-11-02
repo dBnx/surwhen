@@ -1,0 +1,12 @@
+{
+  "defaultTargetEmail": "default@example.com",
+  "surveys": [
+    {
+      "title": "Sample Survey",
+      "description": "This is a sample survey to demonstrate the functionality.",
+      "reasons": ["Option 1", "Option 2", "Option 3"],
+      "targetEmail": "recipient@example.com"
+    }
+  ]
+}
+

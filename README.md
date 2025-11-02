@@ -1,29 +1,88 @@
-# Create T3 App
+# SurWhen
 
-This is a [T3 Stack](https://create.t3.gg/) project bootstrapped with `create-t3-app`.
+A simple survey application with hash-based invitation links. Surveys are accessed via unique invitation links derived from survey titles, ensuring only invited users can participate.
 
-## What's next? How do I make an app with this?
+## Intended Use
 
-We try to keep this project as simple as possible, so you can start with just the scaffolding we set up for you, and add additional things later when they become necessary.
+SurWhen enables you to create private surveys that can only be accessed through invitation links. Each survey has a unique hash-based URL, preventing unauthorized access while avoiding the need for passwords or authentication systems. Perfect for gathering feedback, registrations, or any scenario where you want controlled access without complex user management.
 
-If you are not familiar with the different technologies used in this project, please refer to the respective docs. If you still are in the wind, please join our [Discord](https://t3.gg/discord) and ask for help.
+## How It Works
 
-- [Next.js](https://nextjs.org)
-- [NextAuth.js](https://next-auth.js.org)
-- [Prisma](https://prisma.io)
-- [Drizzle](https://orm.drizzle.team)
-- [Tailwind CSS](https://tailwindcss.com)
-- [tRPC](https://trpc.io)
+- Surveys are configured in `surveys.json`
+- Each survey title generates a unique hash used in the invitation URL
+- Invalid or expired links show an error page
+- Form submissions are sent via email (SMTP) to configured recipients
+- Email addresses can be CC'd to the submitter if provided
 
-## Learn More
+## Configuration
 
-To learn more about the [T3 Stack](https://create.t3.gg/), take a look at the following resources:
+### Surveys
 
-- [Documentation](https://create.t3.gg/)
-- [Learn the T3 Stack](https://create.t3.gg/en/faq#what-learning-resources-are-currently-available) — Check out these awesome tutorials
+Edit `surveys.json` to define your surveys:
 
-You can check out the [create-t3-app GitHub repository](https://github.com/t3-oss/create-t3-app) — your feedback and contributions are welcome!
+```json
+{
+  "defaultTargetEmail": "recipient@example.com",
+  "surveys": [
+    {
+      "title": "Survey Title (must be unique)",
+      "description": "Survey description shown to users",
+      "reasons": ["Option 1", "Option 2", "Option 3"],
+      "targetEmail": "specific@example.com"
+    }
+  ]
+}
+```
 
-## How do I deploy this?
+- `defaultTargetEmail`: Used when a survey doesn't specify `targetEmail`
+- `title`: Must be unique (used to generate the invitation hash)
+- `targetEmail`: Optional per survey; falls back to `defaultTargetEmail`
 
-Follow our deployment guides for [Vercel](https://create.t3.gg/en/deployment/vercel), [Netlify](https://create.t3.gg/en/deployment/netlify) and [Docker](https://create.t3.gg/en/deployment/docker) for more information.
+### Environment Variables
+
+Create a `.env` file with SMTP configuration:
+
+```env
+SMTP_HOST=smtp.example.com
+SMTP_PORT=587
+SMTP_USER=your-email@example.com
+SMTP_PASSWORD=your-password
+SMTP_FROM=your-email@example.com
+```
+
+## Setup
+
+1. Install dependencies:
+   ```bash
+   pnpm install
+   ```
+
+2. Configure surveys in `surveys.json`
+
+3. Set environment variables in `.env`
+
+4. Run the development server:
+   ```bash
+   pnpm dev
+   ```
+
+## Generating Invitation Links
+
+The invitation hash is the first 16 characters of the SHA256 hash of the survey title. You can generate it using:
+
+```bash
+node -e "const crypto = require('crypto'); console.log(crypto.createHash('sha256').update('Your Survey Title').digest('hex').substring(0, 16))"
+```
+
+The invitation URL format is: `/survey/{hash}`
+
+For example, if your survey title is "Feedback Survey" and the hash is `a1b2c3d4e5f6g7h8`, the link would be:
+`https://yourdomain.com/survey/a1b2c3d4e5f6g7h8`
+
+## Tech Stack
+
+Built with [T3 Stack](https://create.t3.gg/):
+- Next.js 15
+- TypeScript
+- Tailwind CSS
+- Nodemailer (SMTP)
