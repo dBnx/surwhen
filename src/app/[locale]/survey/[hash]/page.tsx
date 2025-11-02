@@ -1,9 +1,9 @@
 "use client";
 
-import { use, useState } from "react";
+import { use, useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import { useTranslations } from "next-intl";
-import { getSurveyByHash } from "~/lib/surveys";
+import type { Survey } from "~/lib/surveys";
 
 // Simple Tooltip Component
 function Tooltip({
@@ -30,19 +30,55 @@ interface SurveyPageProps {
 
 export default function SurveyPage({ params }: SurveyPageProps) {
   const { hash } = use(params);
-  const survey = getSurveyByHash(hash);
   const t = useTranslations("survey");
   const tCommon = useTranslations("common");
 
-  if (!survey) {
-    notFound();
-  }
+  const [survey, setSurvey] = useState<Survey | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(false);
 
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
+
+  useEffect(() => {
+    async function fetchSurvey() {
+      try {
+        const response = await fetch(`/api/surveys/${hash}`);
+        if (response.status === 404) {
+          setError(true);
+          return;
+        }
+        if (!response.ok) {
+          setError(true);
+          return;
+        }
+        const surveyData = (await response.json()) as Survey;
+        setSurvey(surveyData);
+      } catch (err) {
+        console.error("Error fetching survey:", err);
+        setError(true);
+      } finally {
+        setLoading(false);
+      }
+    }
+
+    void fetchSurvey();
+  }, [hash]);
+
+  if (loading) {
+    return (
+      <main className="flex min-h-screen items-center justify-center text-white">
+        <p>{tCommon("loading")}</p>
+      </main>
+    );
+  }
+
+  if (error || !survey) {
+    notFound();
+  }
 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
