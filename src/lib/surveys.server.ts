@@ -8,63 +8,52 @@ import {
   generateHashFromTitle,
   isValidEmail,
 } from "~/lib/surveys";
+import { getStorageBackend } from "~/lib/storage";
 
-// Use /tmp for writes (writable in serverless environments)
-// Read from /tmp if it exists, otherwise fall back to original file
-async function getSurveysJsonPath(readOnly = false): Promise<string> {
-  if (readOnly) {
-    // For reading, check /tmp first, then fall back to original
-    const tmpPath = "/tmp/surveys.json";
-    try {
-      await fs.access(tmpPath);
-      return tmpPath;
-    } catch {
-      // /tmp version doesn't exist, use original
-      return join(process.cwd(), "surveys.json");
-    }
-  }
-  // For writing, always use /tmp
-  return "/tmp/surveys.json";
-}
+const STORAGE_KEY = "surveys.json";
 
-async function ensureTmpFileExists(): Promise<void> {
-  const tmpPath = "/tmp/surveys.json";
-  try {
-    await fs.access(tmpPath);
+// Initialize storage backend
+const storage = getStorageBackend();
+
+/**
+ * Ensure the storage file exists. If it doesn't, try to copy from the original file,
+ * or create a default config if the original doesn't exist.
+ */
+async function ensureStorageFileExists(): Promise<void> {
+  const exists = await storage.exists(STORAGE_KEY);
+  if (exists) {
     // File exists, nothing to do
     return;
+  }
+
+  // File doesn't exist, try to copy from original file
+  const originalPath = join(process.cwd(), "surveys.json");
+  try {
+    const originalContent = await fs.readFile(originalPath, "utf-8");
+    await storage.write(STORAGE_KEY, originalContent);
   } catch {
-    // File doesn't exist, copy from original
-    const originalPath = join(process.cwd(), "surveys.json");
-    try {
-      const originalContent = await fs.readFile(originalPath, "utf-8");
-      await fs.writeFile(tmpPath, originalContent, "utf-8");
-    } catch {
-      // If original doesn't exist or can't be read, start with empty config
-      const defaultConfig: SurveysConfig = {
-        defaultTargetEmail: "",
-        surveys: [],
-      };
-      await fs.writeFile(tmpPath, JSON.stringify(defaultConfig, null, 2), "utf-8");
-    }
+    // If original doesn't exist or can't be read, start with empty config
+    const defaultConfig: SurveysConfig = {
+      defaultTargetEmail: "",
+      surveys: [],
+    };
+    await storage.write(STORAGE_KEY, JSON.stringify(defaultConfig, null, 2));
   }
 }
 
 export async function saveSurveysConfig(
   config: SurveysConfig,
 ): Promise<void> {
-  await ensureTmpFileExists();
-  const filePath = await getSurveysJsonPath(false);
-  await fs.writeFile(filePath, JSON.stringify(config, null, 2), "utf-8");
+  await ensureStorageFileExists();
+  await storage.write(STORAGE_KEY, JSON.stringify(config, null, 2));
 }
 
 // New function to get config from the correct location
 export async function getSurveysConfigFromFile(): Promise<SurveysConfig> {
-  // Ensure tmp file exists before reading (copy from original if needed)
-  await ensureTmpFileExists();
-  // Always read from /tmp/surveys.json (the runtime config), never fall back to original
-  const tmpPath = "/tmp/surveys.json";
-  const content = await fs.readFile(tmpPath, "utf-8");
+  // Ensure storage file exists before reading (copy from original if needed)
+  await ensureStorageFileExists();
+  // Always read from storage backend (the runtime config)
+  const content = await storage.read(STORAGE_KEY);
   return JSON.parse(content) as SurveysConfig;
 }
 

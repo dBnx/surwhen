@@ -14,6 +14,8 @@ export const env = createEnv({
     SMTP_PASSWORD: z.string(),
     SMTP_FROM: z.string().email(),
     ADMIN_TOKEN: z.string().default("secret"),
+    STORAGE_BACKEND: z.enum(["local", "blob"]).optional(),
+    BLOB_READ_WRITE_TOKEN: z.string().optional(),
   },
 
   /**
@@ -37,6 +39,8 @@ export const env = createEnv({
     SMTP_PASSWORD: process.env.SMTP_PASSWORD,
     SMTP_FROM: process.env.SMTP_FROM,
     ADMIN_TOKEN: process.env.ADMIN_TOKEN ?? "secret",
+    STORAGE_BACKEND: process.env.STORAGE_BACKEND,
+    BLOB_READ_WRITE_TOKEN: process.env.BLOB_READ_WRITE_TOKEN,
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
