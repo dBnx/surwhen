@@ -35,10 +35,10 @@ export default async function LocaleLayout({
   return (
     <html lang={locale} className={geist.variable}>
       <body>
-        <div className="fixed top-4 right-4 z-50">
-          <LanguageSwitcher />
-        </div>
         <NextIntlClientProvider messages={messages}>
+          <div className="fixed top-4 right-4 z-50">
+            <LanguageSwitcher />
+          </div>
           {children}
         </NextIntlClientProvider>
       </body>

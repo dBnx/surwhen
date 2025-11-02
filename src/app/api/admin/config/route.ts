@@ -1,10 +1,10 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { env } from "~/env";
 import { updateDefaultTargetEmail } from "~/lib/surveys.server";
 
 function validateToken(request: NextRequest): boolean {
   const token =
-    request.nextUrl.searchParams.get("token") ||
+    request.nextUrl.searchParams.get("token") ??
     request.headers.get("x-admin-token");
   return token === env.ADMIN_TOKEN;
 }

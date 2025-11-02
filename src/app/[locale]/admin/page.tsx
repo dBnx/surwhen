@@ -1,7 +1,7 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useTranslations } from "next-intl";
 import type { SurveyWithHash } from "~/lib/surveys";
 
@@ -15,9 +15,7 @@ interface ErrorResponse {
   errors?: string[];
 }
 
-interface SuccessResponse {
-  success: boolean;
-}
+// SuccessResponse removed (unused)
 
 interface FormDataState {
   title: string;
@@ -50,17 +48,7 @@ export default function AdminPage() {
     targetEmail: "",
   });
 
-  useEffect(() => {
-    if (!token) {
-      setError(t("tokenRequired"));
-      setLoading(false);
-      return;
-    }
-
-    fetchSurveys();
-  }, [token, t]);
-
-  const fetchSurveys = async (): Promise<void> => {
+  const fetchSurveys = useCallback(async (): Promise<void> => {
     try {
       const response = await fetch(`/api/admin/surveys?token=${token}`);
       if (response.status === 401) {
@@ -76,11 +64,21 @@ export default function AdminPage() {
       setDefaultEmail(data.defaultTargetEmail);
       setDefaultEmailInput(data.defaultTargetEmail);
       setLoading(false);
-    } catch (err: unknown) {
+    } catch (_err: unknown) {
       setError(t("failedToLoad"));
       setLoading(false);
     }
-  };
+  }, [token, t]);
+
+  useEffect(() => {
+    if (!token) {
+      setError(t("tokenRequired"));
+      setLoading(false);
+      return;
+    }
+
+    void fetchSurveys();
+  }, [fetchSurveys, token, t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -153,7 +151,7 @@ export default function AdminPage() {
       title: survey.title,
       description: survey.description,
       reasons: survey.reasons.join("\n"),
-      targetEmail: survey.targetEmail || "",
+      targetEmail: survey.targetEmail ?? "",
     });
     setShowAddForm(true);
   };
@@ -214,7 +212,7 @@ export default function AdminPage() {
 
   const copyLink = (hash: string): void => {
     const link = `${window.location.origin}/survey/${hash}`;
-    navigator.clipboard.writeText(link);
+    void navigator.clipboard.writeText(link);
     setSuccess(t("linkCopied"));
     setTimeout(() => setSuccess(null), 2000);
   };
@@ -428,9 +426,7 @@ export default function AdminPage() {
                         </button>
                       </td>
                       <td className="px-4 py-2">
-                        {survey.targetEmail ? (
-                          survey.targetEmail
-                        ) : (
+                        {survey.targetEmail ?? (
                           <span className="text-white/60">
                             {t("defaultTarget", { email: defaultEmail })}
                           </span>

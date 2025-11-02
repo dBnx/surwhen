@@ -1,4 +1,4 @@
-import { NextRequest, NextResponse } from "next/server";
+import { type NextRequest, NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
 import { getSurveyByHash, getTargetEmail } from "~/lib/surveys";
 import { sendSurveySubmissionEmail } from "~/lib/email";
@@ -13,7 +13,7 @@ interface SubmitRequestBody {
 
 function getLocaleFromRequest(request: NextRequest): Locale {
   const acceptLanguage = request.headers.get("accept-language");
-  
+
   if (!acceptLanguage) {
     return defaultLocale;
   }
@@ -22,11 +22,11 @@ function getLocaleFromRequest(request: NextRequest): Locale {
   const languages = acceptLanguage
     .split(",")
     .map((lang) => {
-      const [code, q = "q=1"] = lang.trim().split(";");
+      const [code = "", q = "q=1"] = lang.trim().split(";");
       const quality = parseFloat(q.replace("q=", "")) || 1;
       return { code: code.toLowerCase().split("-")[0], quality };
     })
-    .sort((a, b) => b.quality - a.quality);
+    .sort((a: { code?: string; quality: number }, b: { code?: string; quality: number }) => b.quality - a.quality);
 
   // Find first supported locale
   for (const { code } of languages) {
@@ -44,7 +44,7 @@ export async function POST(
   try {
     const locale = getLocaleFromRequest(request);
     const t = await getTranslations({ locale, namespace: "errors" });
-    
+
     const body = (await request.json()) as SubmitRequestBody;
     const { hash, name, email, reason } = body;
 

@@ -9,9 +9,7 @@ const withNextIntl = createNextIntlPlugin("./src/i18n/request.ts");
 
 /** @type {import("next").NextConfig} */
 const config = {
-  experimental: {
-    instrumentationHook: true,
-  },
+  // No experimental flags required for current setup
 };
 
 export default withNextIntl(config);
