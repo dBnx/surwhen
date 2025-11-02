@@ -4,6 +4,7 @@ import { notFound } from "next/navigation";
 import { locales, type Locale } from "~/i18n/config";
 import LanguageSwitcher from "~/components/LanguageSwitcher";
 import LocaleSetter from "~/components/LocaleSetter";
+import { ToastProvider } from "~/components/ToastProvider";
 
 export function generateStaticParams() {
   return locales.map((locale) => ({ locale }));
@@ -29,11 +30,13 @@ export default async function LocaleLayout({
 
   return (
     <NextIntlClientProvider messages={messages}>
-      <LocaleSetter locale={locale} />
-      <div className="fixed top-4 right-4 z-50">
-        <LanguageSwitcher />
-      </div>
-      {children}
+      <ToastProvider>
+        <LocaleSetter locale={locale} />
+        <div className="fixed top-4 right-4 z-50">
+          <LanguageSwitcher />
+        </div>
+        {children}
+      </ToastProvider>
     </NextIntlClientProvider>
   );
 }

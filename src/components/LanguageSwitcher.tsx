@@ -1,13 +1,14 @@
 "use client";
 
 import { useLocale } from "next-intl";
-import { useRouter, usePathname } from "next/navigation";
+import { useRouter, usePathname, useSearchParams } from "next/navigation";
 import { locales, type Locale } from "~/i18n/config";
 
 export default function LanguageSwitcher() {
   const locale = useLocale() as Locale;
   const router = useRouter();
   const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   const switchLocale = (newLocale: Locale) => {
     // Set cookie for locale preference
@@ -25,7 +26,12 @@ export default function LanguageSwitcher() {
     const newPath = segments.length > 0 
       ? `/${newLocale}/${segments.join("/")}`
       : `/${newLocale}`;
-    router.push(newPath);
+    
+    // Preserve search parameters (e.g., token for admin page)
+    const queryString = searchParams.toString();
+    const newUrl = queryString ? `${newPath}?${queryString}` : newPath;
+    
+    router.push(newUrl);
     router.refresh();
   };
 
