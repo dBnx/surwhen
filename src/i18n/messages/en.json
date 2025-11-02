@@ -1,0 +1,79 @@
+{
+  "common": {
+    "send": "Send",
+    "sending": "Sending...",
+    "update": "Update",
+    "cancel": "Cancel",
+    "edit": "Edit",
+    "delete": "Delete",
+    "loading": "Loading...",
+    "optional": "(Optional)"
+  },
+  "home": {
+    "title": "Survey Access",
+    "message": "An invitation link must be used to access surveys."
+  },
+  "survey": {
+    "name": "Name",
+    "namePlaceholder": "Your name",
+    "nameTooltip": "Your name (or nickname) will be included in the survey submission, as long as everybody knows who you are :)",
+    "emailLabel": "Email for Confirmation Copy",
+    "emailPlaceholder": "your.email@example.com (optional)",
+    "emailTooltip": "If provided, you'll receive a confirmation copy of your submission via email",
+    "reason": "Reason",
+    "reasonSelectPlaceholder": "Select a reason...",
+    "reasonTooltip": "Select the reason that best describes your submission",
+    "submitSuccess": "Survey submitted successfully!",
+    "submitError": "An error occurred. Please try again."
+  },
+  "admin": {
+    "title": "Admin Panel",
+    "defaultTargetEmail": "Default Target Email",
+    "defaultTargetEmailWarning": "Warning: Default target email is required! Surveys without a specific target email will fail to send.",
+    "defaultTargetEmailPlaceholder": "default@example.com",
+    "addSurvey": "Add Survey",
+    "editSurvey": "Edit Survey",
+    "addNewSurvey": "Add New Survey",
+    "titleLabel": "Title *",
+    "descriptionLabel": "Description *",
+    "reasonsLabel": "Reasons (one per line) *",
+    "targetEmailLabel": "Target Email (optional)",
+    "targetEmailPlaceholder": "Leave empty to use default",
+    "addSurveyButton": "Add Survey",
+    "updateSurveyButton": "Update Survey",
+    "titleWarning": "Warning: Changing the title will invalidate the shared URL. The survey hash is generated from the title, so any existing links will no longer work.",
+    "surveys": "Surveys",
+    "surveysEmpty": "No surveys yet. Add one to get started!",
+    "surveysTable": {
+      "title": "Title",
+      "link": "Link",
+      "targetEmail": "Target Email",
+      "actions": "Actions"
+    },
+    "defaultTarget": "Default Target: {email}",
+    "linkCopied": "Link copied to clipboard!",
+    "surveyUpdated": "Survey updated successfully",
+    "surveyAdded": "Survey added successfully",
+    "surveyDeleted": "Survey deleted successfully",
+    "tokenRequired": "Token is required. Access /admin?token=secret",
+    "invalidToken": "Invalid token",
+    "failedToLoad": "Failed to load surveys",
+    "failedToSave": "Failed to save survey",
+    "failedToDelete": "Failed to delete survey",
+    "failedToUpdateEmail": "Failed to update default email",
+    "defaultEmailUpdated": "Default email updated successfully",
+    "deleteConfirm": "Are you sure you want to delete this survey?"
+  },
+  "errors": {
+    "missingFields": "Missing required fields",
+    "invalidSurveyHash": "Invalid survey hash",
+    "internalServerError": "Internal server error"
+  },
+  "notFound": {
+    "title": "Invalid Invitation",
+    "message": "This invitation has expired or is invalid.",
+    "submessage": "An invitation link must be used to access surveys.",
+    "returnHome": "Return to Home"
+  }
+}
+

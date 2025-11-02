@@ -2,6 +2,7 @@
 
 import { use, useState } from "react";
 import { notFound } from "next/navigation";
+import { useTranslations } from "next-intl";
 import { getSurveyByHash } from "~/lib/surveys";
 
 // Simple Tooltip Component
@@ -30,6 +31,8 @@ interface SurveyPageProps {
 export default function SurveyPage({ params }: SurveyPageProps) {
   const { hash } = use(params);
   const survey = getSurveyByHash(hash);
+  const t = useTranslations("survey");
+  const tCommon = useTranslations("common");
 
   if (!survey) {
     notFound();
@@ -88,8 +91,8 @@ export default function SurveyPage({ params }: SurveyPageProps) {
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="flex flex-col gap-2">
               <label htmlFor="name" className="text-sm font-medium flex items-center gap-1.5">
-                Name <span className="text-red-400">*</span>
-                <Tooltip text="Your name (or nickname) will be included in the survey submission, as long as everybody knows who you are :)">
+                {t("name")} <span className="text-red-400">*</span>
+                <Tooltip text={t("nameTooltip")}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 text-white/60 hover:text-white/80 cursor-help"
@@ -113,16 +116,16 @@ export default function SurveyPage({ params }: SurveyPageProps) {
                 value={name}
                 onChange={(e) => setName(e.target.value)}
                 className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
-                placeholder="Your name"
+                placeholder={t("namePlaceholder")}
                 maxLength={1000}
               />
             </div>
 
             <div className="flex flex-col gap-2">
               <label htmlFor="email" className="text-sm font-medium flex items-center gap-1.5">
-                Email for Confirmation Copy
-                <span className="text-xs font-normal text-white/50">(Optional)</span>
-                <Tooltip text="If provided, you'll receive a confirmation copy of your submission via email">
+                {t("emailLabel")}
+                <span className="text-xs font-normal text-white/50">{tCommon("optional")}</span>
+                <Tooltip text={t("emailTooltip")}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 text-white/60 hover:text-white/80 cursor-help"
@@ -145,15 +148,15 @@ export default function SurveyPage({ params }: SurveyPageProps) {
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
-                placeholder="your.email@example.com (optional)"
+                placeholder={t("emailPlaceholder")}
                 maxLength={500}
               />
             </div>
 
             <div className="flex flex-col gap-2">
               <label htmlFor="reason" className="text-sm font-medium flex items-center gap-1.5">
-                Reason <span className="text-red-400">*</span>
-                <Tooltip text="Select the reason that best describes your submission">
+                {t("reason")} <span className="text-red-400">*</span>
+                <Tooltip text={t("reasonTooltip")}>
                   <svg
                     xmlns="http://www.w3.org/2000/svg"
                     className="h-4 w-4 text-white/60 hover:text-white/80 cursor-help"
@@ -178,7 +181,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
                 className="rounded-lg bg-white/25 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
               >
                 <option value="" className="bg-[var(--color-gradient-start)]">
-                  Select a reason...
+                  {t("reasonSelectPlaceholder")}
                 </option>
                 {survey.reasons.map((r) => (
                   <option key={r} value={r} className="bg-[var(--color-gradient-start)]">
@@ -193,18 +196,18 @@ export default function SurveyPage({ params }: SurveyPageProps) {
               disabled={isSubmitting}
               className="mt-4 rounded-lg bg-white/25 px-6 py-3 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
             >
-              {isSubmitting ? "Sending..." : "Send"}
+              {isSubmitting ? tCommon("sending") : tCommon("send")}
             </button>
 
             {submitStatus === "success" && (
               <p className="mt-2 text-center text-green-400">
-                Survey submitted successfully!
+                {t("submitSuccess")}
               </p>
             )}
 
             {submitStatus === "error" && (
               <p className="mt-2 text-center text-red-400">
-                An error occurred. Please try again.
+                {t("submitError")}
               </p>
             )}
           </form>

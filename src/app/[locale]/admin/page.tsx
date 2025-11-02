@@ -2,6 +2,7 @@
 
 import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
+import { useTranslations } from "next-intl";
 import type { SurveyWithHash } from "~/lib/surveys";
 
 interface SurveysResponse {
@@ -28,6 +29,8 @@ interface FormDataState {
 export default function AdminPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
+  const t = useTranslations("admin");
+  const tCommon = useTranslations("common");
 
   const [defaultEmail, setDefaultEmail] = useState("");
   const [defaultEmailInput, setDefaultEmailInput] = useState("");
@@ -49,24 +52,24 @@ export default function AdminPage() {
 
   useEffect(() => {
     if (!token) {
-      setError("Token is required. Access /admin?token=secret");
+      setError(t("tokenRequired"));
       setLoading(false);
       return;
     }
 
     fetchSurveys();
-  }, [token]);
+  }, [token, t]);
 
   const fetchSurveys = async (): Promise<void> => {
     try {
       const response = await fetch(`/api/admin/surveys?token=${token}`);
       if (response.status === 401) {
-        setError("Invalid token");
+        setError(t("invalidToken"));
         setLoading(false);
         return;
       }
       if (!response.ok) {
-        throw new Error("Failed to fetch surveys");
+        throw new Error(t("failedToLoad"));
       }
       const data = (await response.json()) as SurveysResponse;
       setSurveys(data.surveys);
@@ -74,7 +77,7 @@ export default function AdminPage() {
       setDefaultEmailInput(data.defaultTargetEmail);
       setLoading(false);
     } catch (err: unknown) {
-      setError("Failed to load surveys");
+      setError(t("failedToLoad"));
       setLoading(false);
     }
   };
@@ -129,17 +132,17 @@ export default function AdminPage() {
 
       if (!response.ok) {
         const data = (await response.json()) as ErrorResponse;
-        throw new Error(data.error || "Failed to save survey");
+        throw new Error(data.error || t("failedToSave"));
       }
 
-      setSuccess(editingHash ? "Survey updated successfully" : "Survey added successfully");
+      setSuccess(editingHash ? t("surveyUpdated") : t("surveyAdded"));
       setShowAddForm(false);
       setEditingHash(null);
       setOriginalTitle("");
       setFormData({ title: "", description: "", reasons: "", targetEmail: "" });
       await fetchSurveys();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to save survey");
+      setError(err instanceof Error ? err.message : t("failedToSave"));
     }
   };
 
@@ -156,7 +159,7 @@ export default function AdminPage() {
   };
 
   const handleDelete = async (hash: string): Promise<void> => {
-    if (!confirm("Are you sure you want to delete this survey?")) {
+    if (!confirm(t("deleteConfirm"))) {
       return;
     }
 
@@ -169,13 +172,13 @@ export default function AdminPage() {
       );
 
       if (!response.ok) {
-        throw new Error("Failed to delete survey");
+        throw new Error(t("failedToDelete"));
       }
 
-      setSuccess("Survey deleted successfully");
+      setSuccess(t("surveyDeleted"));
       await fetchSurveys();
     } catch (err: unknown) {
-      setError(err instanceof Error ? err.message : "Failed to delete survey");
+      setError(err instanceof Error ? err.message : t("failedToDelete"));
     }
   };
 
@@ -197,14 +200,14 @@ export default function AdminPage() {
 
       if (!response.ok) {
         const data = (await response.json()) as ErrorResponse;
-        throw new Error(data.error || "Failed to update default email");
+        throw new Error(data.error || t("failedToUpdateEmail"));
       }
 
       setDefaultEmail(defaultEmailInput);
-      setSuccess("Default email updated successfully");
+      setSuccess(t("defaultEmailUpdated"));
     } catch (err: unknown) {
       setError(
-        err instanceof Error ? err.message : "Failed to update default email",
+        err instanceof Error ? err.message : t("failedToUpdateEmail"),
       );
     }
   };
@@ -212,14 +215,14 @@ export default function AdminPage() {
   const copyLink = (hash: string): void => {
     const link = `${window.location.origin}/survey/${hash}`;
     navigator.clipboard.writeText(link);
-    setSuccess("Link copied to clipboard!");
+    setSuccess(t("linkCopied"));
     setTimeout(() => setSuccess(null), 2000);
   };
 
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white">
-        <p>Loading...</p>
+        <p>{tCommon("loading")}</p>
       </main>
     );
   }
@@ -238,7 +241,7 @@ export default function AdminPage() {
     <main className="min-h-screen bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white p-8">
       <div className="container mx-auto max-w-6xl">
         <h1 className="mb-8 text-4xl font-extrabold tracking-tight drop-shadow-lg">
-          Admin Panel
+          {t("title")}
         </h1>
 
         {error && (
@@ -255,10 +258,10 @@ export default function AdminPage() {
 
         {/* Default Email Configuration */}
         <div className="mb-8 rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
-          <h2 className="mb-4 text-2xl font-bold">Default Target Email</h2>
+          <h2 className="mb-4 text-2xl font-bold">{t("defaultTargetEmail")}</h2>
           {(!defaultEmail || defaultEmail.trim() === "") && (
             <div className="mb-4 rounded-lg bg-red-500/20 p-4 text-red-300 border border-red-400/30">
-              <strong>Warning:</strong> Default target email is required! Surveys without a specific target email will fail to send.
+              <strong>{t("defaultTargetEmailWarning")}</strong>
             </div>
           )}
           <form onSubmit={handleUpdateDefaultEmail} className="flex gap-4">
@@ -267,7 +270,7 @@ export default function AdminPage() {
               value={defaultEmailInput}
               onChange={(e) => setDefaultEmailInput(e.target.value)}
               className="flex-1 rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
-              placeholder="default@example.com"
+              placeholder={t("defaultTargetEmailPlaceholder")}
               maxLength={500}
               required
             />
@@ -275,7 +278,7 @@ export default function AdminPage() {
               type="submit"
               className="rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
             >
-              Update
+              {tCommon("update")}
             </button>
           </form>
         </div>
@@ -284,18 +287,16 @@ export default function AdminPage() {
         {showAddForm && (
           <div className="mb-8 rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
             <h2 className="mb-4 text-2xl font-bold">
-              {editingHash ? "Edit Survey" : "Add New Survey"}
+              {editingHash ? t("editSurvey") : t("addNewSurvey")}
             </h2>
             {editingHash && formData.title !== originalTitle && (
               <div className="mb-4 rounded-lg bg-yellow-500/20 p-4 text-yellow-300">
-                <strong>Warning:</strong> Changing the title will invalidate the shared URL.
-                The survey hash is generated from the title, so any existing links will no longer
-                work.
+                <strong>{t("titleWarning")}</strong>
               </div>
             )}
             <form onSubmit={handleSubmit} className="flex flex-col gap-4">
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Title *</label>
+                <label className="text-sm font-medium">{t("titleLabel")}</label>
                 <input
                   type="text"
                   value={formData.title}
@@ -309,7 +310,7 @@ export default function AdminPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Description *</label>
+                <label className="text-sm font-medium">{t("descriptionLabel")}</label>
                 <textarea
                   value={formData.description}
                   onChange={(e) =>
@@ -324,7 +325,7 @@ export default function AdminPage() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">
-                  Reasons (one per line) *
+                  {t("reasonsLabel")}
                 </label>
                 <textarea
                   value={formData.reasons}
@@ -340,7 +341,7 @@ export default function AdminPage() {
               </div>
 
               <div className="flex flex-col gap-2">
-                <label className="text-sm font-medium">Target Email (optional)</label>
+                <label className="text-sm font-medium">{t("targetEmailLabel")}</label>
                 <input
                   type="email"
                   value={formData.targetEmail}
@@ -348,7 +349,7 @@ export default function AdminPage() {
                     setFormData({ ...formData, targetEmail: e.target.value })
                   }
                   className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
-                  placeholder="Leave empty to use default"
+                  placeholder={t("targetEmailPlaceholder")}
                   maxLength={500}
                 />
               </div>
@@ -358,7 +359,7 @@ export default function AdminPage() {
                   type="submit"
                   className="rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  {editingHash ? "Update" : "Add"} Survey
+                  {editingHash ? t("updateSurveyButton") : t("addSurveyButton")}
                 </button>
                 <button
                   type="button"
@@ -377,7 +378,7 @@ export default function AdminPage() {
                   }}
                   className="rounded-lg bg-white/15 px-6 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                 >
-                  Cancel
+                  {tCommon("cancel")}
                 </button>
               </div>
             </form>
@@ -387,28 +388,28 @@ export default function AdminPage() {
         {/* Surveys List */}
         <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
           <div className="mb-4 flex items-center justify-between">
-            <h2 className="text-2xl font-bold">Surveys</h2>
+            <h2 className="text-2xl font-bold">{t("surveys")}</h2>
             {!showAddForm && (
               <button
                 onClick={() => setShowAddForm(true)}
                 className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
               >
-                Add Survey
+                {t("addSurvey")}
               </button>
             )}
           </div>
 
           {surveys.length === 0 ? (
-            <p className="text-white/60">No surveys yet. Add one to get started!</p>
+            <p className="text-white/60">{t("surveysEmpty")}</p>
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-white/20">
-                    <th className="px-4 py-2 text-left">Title</th>
-                    <th className="px-4 py-2 text-left">Link</th>
-                    <th className="px-4 py-2 text-left">Target Email</th>
-                    <th className="px-4 py-2 text-left">Actions</th>
+                    <th className="px-4 py-2 text-left">{t("surveysTable.title")}</th>
+                    <th className="px-4 py-2 text-left">{t("surveysTable.link")}</th>
+                    <th className="px-4 py-2 text-left">{t("surveysTable.targetEmail")}</th>
+                    <th className="px-4 py-2 text-left">{t("surveysTable.actions")}</th>
                   </tr>
                 </thead>
                 <tbody>
@@ -431,7 +432,7 @@ export default function AdminPage() {
                           survey.targetEmail
                         ) : (
                           <span className="text-white/60">
-                            Default Target: {defaultEmail}
+                            {t("defaultTarget", { email: defaultEmail })}
                           </span>
                         )}
                       </td>
@@ -441,13 +442,13 @@ export default function AdminPage() {
                             onClick={() => handleEdit(survey)}
                             className="rounded bg-blue-500/20 px-3 py-1 text-sm text-blue-300 hover:bg-blue-500/30"
                           >
-                            Edit
+                            {tCommon("edit")}
                           </button>
                           <button
                             onClick={() => handleDelete(survey.hash)}
                             className="rounded bg-red-500/20 px-3 py-1 text-sm text-red-300 hover:bg-red-500/30"
                           >
-                            Delete
+                            {tCommon("delete")}
                           </button>
                         </div>
                       </td>

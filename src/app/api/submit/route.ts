@@ -1,6 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { getTranslations } from "next-intl/server";
 import { getSurveyByHash, getTargetEmail } from "~/lib/surveys";
 import { sendSurveySubmissionEmail } from "~/lib/email";
+import { locales, defaultLocale, type Locale } from "~/i18n/config";
 
 interface SubmitRequestBody {
   hash: string;
@@ -9,16 +11,46 @@ interface SubmitRequestBody {
   reason: string;
 }
 
+function getLocaleFromRequest(request: NextRequest): Locale {
+  const acceptLanguage = request.headers.get("accept-language");
+  
+  if (!acceptLanguage) {
+    return defaultLocale;
+  }
+
+  // Parse Accept-Language header
+  const languages = acceptLanguage
+    .split(",")
+    .map((lang) => {
+      const [code, q = "q=1"] = lang.trim().split(";");
+      const quality = parseFloat(q.replace("q=", "")) || 1;
+      return { code: code.toLowerCase().split("-")[0], quality };
+    })
+    .sort((a, b) => b.quality - a.quality);
+
+  // Find first supported locale
+  for (const { code } of languages) {
+    if (locales.includes(code as Locale)) {
+      return code as Locale;
+    }
+  }
+
+  return defaultLocale;
+}
+
 export async function POST(
   request: NextRequest,
 ): Promise<NextResponse> {
   try {
+    const locale = getLocaleFromRequest(request);
+    const t = await getTranslations({ locale, namespace: "errors" });
+    
     const body = (await request.json()) as SubmitRequestBody;
     const { hash, name, email, reason } = body;
 
     if (!hash || !name || !reason) {
       return NextResponse.json(
-        { error: "Missing required fields" },
+        { error: t("missingFields") },
         { status: 400 },
       );
     }
@@ -26,7 +58,7 @@ export async function POST(
     const survey = getSurveyByHash(hash);
     if (!survey) {
       return NextResponse.json(
-        { error: "Invalid survey hash" },
+        { error: t("invalidSurveyHash") },
         { status: 404 },
       );
     }
@@ -44,8 +76,10 @@ export async function POST(
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
     console.error("Error submitting survey:", error);
+    // Use default locale for internal errors
+    const t = await getTranslations({ locale: defaultLocale, namespace: "errors" });
     return NextResponse.json(
-      { error: "Internal server error" },
+      { error: t("internalServerError") },
       { status: 500 },
     );
   }

@@ -1,0 +1,79 @@
+{
+  "common": {
+    "send": "Senden",
+    "sending": "Wird gesendet...",
+    "update": "Aktualisieren",
+    "cancel": "Abbrechen",
+    "edit": "Bearbeiten",
+    "delete": "Löschen",
+    "loading": "Lädt...",
+    "optional": "(Optional)"
+  },
+  "home": {
+    "title": "Umfragezugang",
+    "message": "Ein Einladungslink muss verwendet werden, um auf Umfragen zuzugreifen."
+  },
+  "survey": {
+    "name": "Name",
+    "namePlaceholder": "Ihr Name",
+    "nameTooltip": "Ihr Name (oder Spitzname) wird in der Umfrageeinreichung enthalten sein, solange jeder weiß, wer Sie sind :)",
+    "emailLabel": "E-Mail für Bestätigungskopie",
+    "emailPlaceholder": "ihre.email@beispiel.com (optional)",
+    "emailTooltip": "Falls angegeben, erhalten Sie eine Bestätigungskopie Ihrer Einreichung per E-Mail",
+    "reason": "Grund",
+    "reasonSelectPlaceholder": "Grund auswählen...",
+    "reasonTooltip": "Wählen Sie den Grund aus, der Ihre Einreichung am besten beschreibt",
+    "submitSuccess": "Umfrage erfolgreich eingereicht!",
+    "submitError": "Ein Fehler ist aufgetreten. Bitte versuchen Sie es erneut."
+  },
+  "admin": {
+    "title": "Administrationspanel",
+    "defaultTargetEmail": "Standard-Ziele-Mail",
+    "defaultTargetEmailWarning": "Warnung: Standard-Ziele-Mail ist erforderlich! Umfragen ohne spezifische Ziele-Mail können nicht gesendet werden.",
+    "defaultTargetEmailPlaceholder": "standard@beispiel.com",
+    "addSurvey": "Umfrage hinzufügen",
+    "editSurvey": "Umfrage bearbeiten",
+    "addNewSurvey": "Neue Umfrage hinzufügen",
+    "titleLabel": "Titel *",
+    "descriptionLabel": "Beschreibung *",
+    "reasonsLabel": "Gründe (eine pro Zeile) *",
+    "targetEmailLabel": "Ziele-Mail (optional)",
+    "targetEmailPlaceholder": "Leer lassen, um Standard zu verwenden",
+    "addSurveyButton": "Umfrage hinzufügen",
+    "updateSurveyButton": "Umfrage aktualisieren",
+    "titleWarning": "Warnung: Das Ändern des Titels macht die geteilte URL ungültig. Der Umfrage-Hash wird aus dem Titel generiert, sodass vorhandene Links nicht mehr funktionieren.",
+    "surveys": "Umfragen",
+    "surveysEmpty": "Noch keine Umfragen. Fügen Sie eine hinzu, um zu beginnen!",
+    "surveysTable": {
+      "title": "Titel",
+      "link": "Link",
+      "targetEmail": "Ziele-Mail",
+      "actions": "Aktionen"
+    },
+    "defaultTarget": "Standard-Ziel: {email}",
+    "linkCopied": "Link in Zwischenablage kopiert!",
+    "surveyUpdated": "Umfrage erfolgreich aktualisiert",
+    "surveyAdded": "Umfrage erfolgreich hinzugefügt",
+    "surveyDeleted": "Umfrage erfolgreich gelöscht",
+    "tokenRequired": "Token ist erforderlich. Zugriff auf /admin?token=secret",
+    "invalidToken": "Ungültiger Token",
+    "failedToLoad": "Umfragen konnten nicht geladen werden",
+    "failedToSave": "Umfrage konnte nicht gespeichert werden",
+    "failedToDelete": "Umfrage konnte nicht gelöscht werden",
+    "failedToUpdateEmail": "Standard-E-Mail konnte nicht aktualisiert werden",
+    "defaultEmailUpdated": "Standard-E-Mail erfolgreich aktualisiert",
+    "deleteConfirm": "Sind Sie sicher, dass Sie diese Umfrage löschen möchten?"
+  },
+  "errors": {
+    "missingFields": "Erforderliche Felder fehlen",
+    "invalidSurveyHash": "Ungültiger Umfrage-Hash",
+    "internalServerError": "Interner Serverfehler"
+  },
+  "notFound": {
+    "title": "Ungültige Einladung",
+    "message": "Diese Einladung ist abgelaufen oder ungültig.",
+    "submessage": "Ein Einladungslink muss verwendet werden, um auf Umfragen zuzugreifen.",
+    "returnHome": "Zur Startseite zurückkehren"
+  }
+}
+
