@@ -4,7 +4,7 @@ import { type Metadata } from "next";
 import { Geist } from "next/font/google";
 
 export const metadata: Metadata = {
-  title: "Survey Access",
+  title: "SurWhen",
   description: "Survey access application",
   icons: [{ rel: "icon", url: "/favicon.ico" }],
 };

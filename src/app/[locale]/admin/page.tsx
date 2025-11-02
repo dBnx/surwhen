@@ -85,6 +85,10 @@ export default function AdminPage() {
     void fetchSurveys();
   }, [fetchSurveys, token, t]);
 
+  useEffect(() => {
+    document.title = t("title");
+  }, [t]);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);

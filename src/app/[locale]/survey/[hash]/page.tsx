@@ -106,6 +106,12 @@ export default function SurveyPage({ params }: SurveyPageProps) {
     void fetchSurvey();
   }, [hash]);
 
+  useEffect(() => {
+    if (survey) {
+      document.title = survey.title;
+    }
+  }, [survey]);
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center text-white">
