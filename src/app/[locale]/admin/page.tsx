@@ -86,7 +86,7 @@ export default function AdminPage() {
   }, [fetchSurveys, token, t]);
 
   useEffect(() => {
-    document.title = t("title");
+    document.title = `SurWhen: ${t("title")}`;
   }, [t]);
 
   const handleSubmit = async (e: React.FormEvent) => {

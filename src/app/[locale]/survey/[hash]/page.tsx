@@ -108,7 +108,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
 
   useEffect(() => {
     if (survey) {
-      document.title = survey.title;
+      document.title = `SurWhen: ${survey.title}`;
     }
   }, [survey]);
 
