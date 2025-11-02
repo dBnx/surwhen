@@ -53,10 +53,17 @@ function Tooltip({
         {children}
       </div>
       {isVisible && (
-        <span className="absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white shadow-lg z-10 pointer-events-none">
-          {text}
-          <span className="absolute left-1/2 top-full -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
-        </span>
+        <>
+          {/* Mobile: fixed at top center */}
+          <span className="fixed top-4 left-1/2 -translate-x-1/2 sm:hidden whitespace-normal max-w-[calc(100vw-2rem)] rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white shadow-lg z-50 pointer-events-none">
+            {text}
+          </span>
+          {/* Desktop: absolute above trigger */}
+          <span className="hidden sm:block absolute bottom-full left-1/2 mb-2 -translate-x-1/2 whitespace-nowrap rounded-lg bg-gray-900 px-3 py-1.5 text-xs text-white shadow-lg z-10 pointer-events-none">
+            {text}
+            <span className="absolute left-1/2 top-full -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></span>
+          </span>
+        </>
       )}
     </div>
   );

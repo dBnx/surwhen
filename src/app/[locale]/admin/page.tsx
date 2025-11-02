@@ -325,7 +325,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen text-white p-8">
+    <main className="min-h-screen text-white p-8 pt-20 sm:pt-8">
       <div className="container mx-auto max-w-6xl">
         <h1 className="mb-8 text-4xl font-extrabold tracking-tight drop-shadow-lg">
           {t("title")}
