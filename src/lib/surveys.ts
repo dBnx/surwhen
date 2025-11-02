@@ -41,3 +41,52 @@ export function getTargetEmail(survey: Survey): string {
   return survey.targetEmail ?? config.defaultTargetEmail;
 }
 
+export interface SurveyWithHash extends Survey {
+  hash: string;
+}
+
+export function getAllSurveysWithHashes(): SurveyWithHash[] {
+  const config = getSurveysConfig();
+  return config.surveys.map((survey) => ({
+    ...survey,
+    hash: generateHashFromTitle(survey.title),
+  }));
+}
+
+export function isValidEmail(email: string): boolean {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+}
+
+export function validateSurvey(survey: Partial<Survey>): {
+  valid: boolean;
+  errors: string[];
+} {
+  const errors: string[] = [];
+
+  if (!survey.title || survey.title.trim().length === 0) {
+    errors.push("Title is required");
+  }
+
+  if (!survey.description || survey.description.trim().length === 0) {
+    errors.push("Description is required");
+  }
+
+  if (
+    !survey.reasons ||
+    !Array.isArray(survey.reasons) ||
+    survey.reasons.length === 0
+  ) {
+    errors.push("At least one reason option is required");
+  }
+
+  if (survey.targetEmail && !isValidEmail(survey.targetEmail)) {
+    errors.push("Invalid target email format");
+  }
+
+  return {
+    valid: errors.length === 0,
+    errors,
+  };
+}
+

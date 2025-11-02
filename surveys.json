@@ -2,11 +2,22 @@
   "defaultTargetEmail": "default@example.com",
   "surveys": [
     {
-      "title": "Sample Survey",
-      "description": "This is a sample survey to demonstrate the functionality.",
-      "reasons": ["Option 1", "Option 2", "Option 3"],
+      "title": "Pizza Party",
+      "description": "Can you join the pizza party?",
+      "reasons": [
+        "Yes!",
+        "No, I'm sick :(",
+        "What?"
+      ],
       "targetEmail": "recipient@example.com"
+    },
+    {
+      "title": "Another example",
+      "description": "Heyyy, do you like option A or option B more?",
+      "reasons": [
+        "option a",
+        "option b"
+      ]
     }
   ]
 }
-

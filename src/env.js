@@ -13,6 +13,7 @@ export const env = createEnv({
     SMTP_USER: z.string(),
     SMTP_PASSWORD: z.string(),
     SMTP_FROM: z.string().email(),
+    ADMIN_TOKEN: z.string().default("secret"),
   },
 
   /**
@@ -35,6 +36,7 @@ export const env = createEnv({
     SMTP_USER: process.env.SMTP_USER,
     SMTP_PASSWORD: process.env.SMTP_PASSWORD,
     SMTP_FROM: process.env.SMTP_FROM,
+    ADMIN_TOKEN: process.env.ADMIN_TOKEN ?? "secret",
     // NEXT_PUBLIC_CLIENTVAR: process.env.NEXT_PUBLIC_CLIENTVAR,
   },
   /**
