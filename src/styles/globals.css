@@ -9,3 +9,21 @@
   --color-gradient-mid: #0f172a;
   --color-gradient-end: #000000;
 }
+
+/* Ensure the gradient is the page background (prevents seeing white when overscrolling on mobile)
+   and allow scrolling for long surveys. Keep fonts and smoothing defaults. */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  background: linear-gradient(to bottom right, var(--color-gradient-start), var(--color-gradient-mid), var(--color-gradient-end));
+  color: white;
+}
+
+/* Make sure the root element expands and scrolling reveals the gradient rather than white */
+#__next, main {
+  min-height: 100%;
+}

@@ -55,7 +55,7 @@
     "surveyUpdated": "Umfrage erfolgreich aktualisiert",
     "surveyAdded": "Umfrage erfolgreich hinzugefügt",
     "surveyDeleted": "Umfrage erfolgreich gelöscht",
-    "tokenRequired": "Token ist erforderlich. Zugriff auf /admin?token=secret",
+    "tokenRequired": "Token ist erforderlich!",
     "invalidToken": "Ungültiger Token",
     "failedToLoad": "Umfragen konnten nicht geladen werden",
     "failedToSave": "Umfrage konnte nicht gespeichert werden",
