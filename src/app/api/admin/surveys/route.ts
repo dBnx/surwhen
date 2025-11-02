@@ -1,15 +1,15 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { env } from "~/env";
 import {
-  getAllSurveysWithHashes,
-  getSurveysConfig,
   validateSurvey,
   type Survey,
+  generateHashFromTitle,
 } from "~/lib/surveys";
 import {
   addSurvey,
   updateSurvey,
   deleteSurvey,
+  getSurveysConfigFromFile,
 } from "~/lib/surveys.server";
 
 function validateToken(request: NextRequest): boolean {
@@ -42,8 +42,11 @@ export async function GET(
   }
 
   try {
-    const config = getSurveysConfig();
-    const surveys = getAllSurveysWithHashes();
+    const config = await getSurveysConfigFromFile();
+    const surveys = config.surveys.map((survey) => ({
+      ...survey,
+      hash: generateHashFromTitle(survey.title),
+    }));
 
     return NextResponse.json({
       defaultTargetEmail: config.defaultTargetEmail,

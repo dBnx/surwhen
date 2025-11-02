@@ -5,24 +5,90 @@ import type {
   SurveysConfig,
 } from "~/lib/surveys";
 import {
-  getSurveysConfig,
   generateHashFromTitle,
   isValidEmail,
 } from "~/lib/surveys";
 
-async function getSurveysJsonPath(): Promise<string> {
-  return join(process.cwd(), "surveys.json");
+// Use /tmp for writes (writable in serverless environments)
+// Read from /tmp if it exists, otherwise fall back to original file
+async function getSurveysJsonPath(readOnly = false): Promise<string> {
+  if (readOnly) {
+    // For reading, check /tmp first, then fall back to original
+    const tmpPath = "/tmp/surveys.json";
+    try {
+      await fs.access(tmpPath);
+      return tmpPath;
+    } catch {
+      // /tmp version doesn't exist, use original
+      return join(process.cwd(), "surveys.json");
+    }
+  }
+  // For writing, always use /tmp
+  return "/tmp/surveys.json";
+}
+
+async function ensureTmpFileExists(): Promise<void> {
+  const tmpPath = "/tmp/surveys.json";
+  try {
+    await fs.access(tmpPath);
+    // File exists, nothing to do
+    return;
+  } catch {
+    // File doesn't exist, copy from original
+    const originalPath = join(process.cwd(), "surveys.json");
+    try {
+      const originalContent = await fs.readFile(originalPath, "utf-8");
+      await fs.writeFile(tmpPath, originalContent, "utf-8");
+    } catch (error) {
+      // If original doesn't exist or can't be read, start with empty config
+      const defaultConfig: SurveysConfig = {
+        defaultTargetEmail: "",
+        surveys: [],
+      };
+      await fs.writeFile(tmpPath, JSON.stringify(defaultConfig, null, 2), "utf-8");
+    }
+  }
 }
 
 export async function saveSurveysConfig(
   config: SurveysConfig,
 ): Promise<void> {
-  const filePath = await getSurveysJsonPath();
+  await ensureTmpFileExists();
+  const filePath = await getSurveysJsonPath(false);
   await fs.writeFile(filePath, JSON.stringify(config, null, 2), "utf-8");
 }
 
+// New function to get config from the correct location
+export async function getSurveysConfigFromFile(): Promise<SurveysConfig> {
+  const filePath = await getSurveysJsonPath(true);
+  const content = await fs.readFile(filePath, "utf-8");
+  return JSON.parse(content) as SurveysConfig;
+}
+
+// Async version of getSurveyByHash that reads from file
+export async function getSurveyByHashFromFile(
+  hash: string,
+): Promise<Survey | null> {
+  const config = await getSurveysConfigFromFile();
+  
+  for (const survey of config.surveys) {
+    const surveyHash = generateHashFromTitle(survey.title);
+    if (surveyHash === hash) {
+      return survey;
+    }
+  }
+  
+  return null;
+}
+
+// Async version of getTargetEmail that reads from file
+export async function getTargetEmailFromFile(survey: Survey): Promise<string> {
+  const config = await getSurveysConfigFromFile();
+  return survey.targetEmail ?? config.defaultTargetEmail;
+}
+
 export async function addSurvey(survey: Survey): Promise<void> {
-  const config = getSurveysConfig();
+  const config = await getSurveysConfigFromFile();
 
   // Check for duplicate title
   if (config.surveys.some((s) => s.title === survey.title)) {
@@ -37,7 +103,7 @@ export async function updateSurvey(
   hash: string,
   updates: Partial<Survey>,
 ): Promise<void> {
-  const config = getSurveysConfig();
+  const config = await getSurveysConfigFromFile();
   const surveyIndex = config.surveys.findIndex((s) => {
     const surveyHash = generateHashFromTitle(s.title);
     return surveyHash === hash;
@@ -80,7 +146,7 @@ export async function updateSurvey(
 }
 
 export async function deleteSurvey(hash: string): Promise<void> {
-  const config = getSurveysConfig();
+  const config = await getSurveysConfigFromFile();
   const surveyIndex = config.surveys.findIndex((s) => {
     const surveyHash = generateHashFromTitle(s.title);
     return surveyHash === hash;
@@ -101,7 +167,7 @@ export async function updateDefaultTargetEmail(
     throw new Error("Invalid email format");
   }
 
-  const config = getSurveysConfig();
+  const config = await getSurveysConfigFromFile();
   config.defaultTargetEmail = email;
   await saveSurveysConfig(config);
 }

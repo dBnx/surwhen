@@ -1,6 +1,10 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
-import { getSurveyByHash, getTargetEmail } from "~/lib/surveys";
+import { generateHashFromTitle } from "~/lib/surveys";
+import {
+  getSurveyByHashFromFile,
+  getTargetEmailFromFile,
+} from "~/lib/surveys.server";
 import { sendSurveySubmissionEmail } from "~/lib/email";
 import { locales, defaultLocale, type Locale } from "~/i18n/config";
 
@@ -55,7 +59,7 @@ export async function POST(
       );
     }
 
-    const survey = getSurveyByHash(hash);
+    const survey = await getSurveyByHashFromFile(hash);
     if (!survey) {
       return NextResponse.json(
         { error: t("invalidSurveyHash") },
@@ -63,7 +67,7 @@ export async function POST(
       );
     }
 
-    const targetEmail = getTargetEmail(survey);
+    const targetEmail = await getTargetEmailFromFile(survey);
 
     await sendSurveySubmissionEmail({
       targetEmail,
