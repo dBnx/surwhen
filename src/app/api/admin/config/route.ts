@@ -3,18 +3,25 @@ import { env } from "~/env";
 import { updateDefaultTargetEmail } from "~/lib/surveys.server";
 
 function validateToken(request: NextRequest): boolean {
-  const token = request.nextUrl.searchParams.get("token") ||
+  const token =
+    request.nextUrl.searchParams.get("token") ||
     request.headers.get("x-admin-token");
   return token === env.ADMIN_TOKEN;
 }
 
-export async function PUT(request: NextRequest) {
+interface ConfigRequestBody {
+  defaultTargetEmail: string;
+}
+
+export async function PUT(
+  request: NextRequest,
+): Promise<NextResponse> {
   if (!validateToken(request)) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   try {
-    const body = await request.json();
+    const body = (await request.json()) as ConfigRequestBody;
     const { defaultTargetEmail } = body;
 
     if (!defaultTargetEmail) {
@@ -26,7 +33,7 @@ export async function PUT(request: NextRequest) {
 
     await updateDefaultTargetEmail(defaultTargetEmail);
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error updating default email:", error);
     if (error instanceof Error) {
       return NextResponse.json(

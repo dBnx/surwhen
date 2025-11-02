@@ -2,9 +2,18 @@ import { NextRequest, NextResponse } from "next/server";
 import { getSurveyByHash, getTargetEmail } from "~/lib/surveys";
 import { sendSurveySubmissionEmail } from "~/lib/email";
 
-export async function POST(request: NextRequest) {
+interface SubmitRequestBody {
+  hash: string;
+  name: string;
+  email?: string;
+  reason: string;
+}
+
+export async function POST(
+  request: NextRequest,
+): Promise<NextResponse> {
   try {
-    const body = await request.json();
+    const body = (await request.json()) as SubmitRequestBody;
     const { hash, name, email, reason } = body;
 
     if (!hash || !name || !reason) {
@@ -33,7 +42,7 @@ export async function POST(request: NextRequest) {
     });
 
     return NextResponse.json({ success: true });
-  } catch (error) {
+  } catch (error: unknown) {
     console.error("Error submitting survey:", error);
     return NextResponse.json(
       { error: "Internal server error" },

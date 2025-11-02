@@ -1,6 +1,6 @@
 "use client";
 
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import { useState, useEffect } from "react";
 import type { SurveyWithHash } from "~/lib/surveys";
 
@@ -9,9 +9,24 @@ interface SurveysResponse {
   surveys: SurveyWithHash[];
 }
 
+interface ErrorResponse {
+  error: string;
+  errors?: string[];
+}
+
+interface SuccessResponse {
+  success: boolean;
+}
+
+interface FormDataState {
+  title: string;
+  description: string;
+  reasons: string;
+  targetEmail: string;
+}
+
 export default function AdminPage() {
   const searchParams = useSearchParams();
-  const router = useRouter();
   const token = searchParams.get("token");
 
   const [defaultEmail, setDefaultEmail] = useState("");
@@ -25,7 +40,7 @@ export default function AdminPage() {
   const [editingHash, setEditingHash] = useState<string | null>(null);
   const [originalTitle, setOriginalTitle] = useState<string>("");
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<FormDataState>({
     title: "",
     description: "",
     reasons: "",
@@ -42,7 +57,7 @@ export default function AdminPage() {
     fetchSurveys();
   }, [token]);
 
-  const fetchSurveys = async () => {
+  const fetchSurveys = async (): Promise<void> => {
     try {
       const response = await fetch(`/api/admin/surveys?token=${token}`);
       if (response.status === 401) {
@@ -53,12 +68,12 @@ export default function AdminPage() {
       if (!response.ok) {
         throw new Error("Failed to fetch surveys");
       }
-      const data: SurveysResponse = await response.json();
+      const data = (await response.json()) as SurveysResponse;
       setSurveys(data.surveys);
       setDefaultEmail(data.defaultTargetEmail);
       setDefaultEmailInput(data.defaultTargetEmail);
       setLoading(false);
-    } catch (err) {
+    } catch (err: unknown) {
       setError("Failed to load surveys");
       setLoading(false);
     }
@@ -113,7 +128,7 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as ErrorResponse;
         throw new Error(data.error || "Failed to save survey");
       }
 
@@ -123,12 +138,12 @@ export default function AdminPage() {
       setOriginalTitle("");
       setFormData({ title: "", description: "", reasons: "", targetEmail: "" });
       await fetchSurveys();
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to save survey");
     }
   };
 
-  const handleEdit = (survey: SurveyWithHash) => {
+  const handleEdit = (survey: SurveyWithHash): void => {
     setEditingHash(survey.hash);
     setOriginalTitle(survey.title);
     setFormData({
@@ -140,7 +155,7 @@ export default function AdminPage() {
     setShowAddForm(true);
   };
 
-  const handleDelete = async (hash: string) => {
+  const handleDelete = async (hash: string): Promise<void> => {
     if (!confirm("Are you sure you want to delete this survey?")) {
       return;
     }
@@ -159,12 +174,14 @@ export default function AdminPage() {
 
       setSuccess("Survey deleted successfully");
       await fetchSurveys();
-    } catch (err) {
+    } catch (err: unknown) {
       setError(err instanceof Error ? err.message : "Failed to delete survey");
     }
   };
 
-  const handleUpdateDefaultEmail = async (e: React.FormEvent) => {
+  const handleUpdateDefaultEmail = async (
+    e: React.FormEvent,
+  ): Promise<void> => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
@@ -179,18 +196,20 @@ export default function AdminPage() {
       });
 
       if (!response.ok) {
-        const data = await response.json();
+        const data = (await response.json()) as ErrorResponse;
         throw new Error(data.error || "Failed to update default email");
       }
 
       setDefaultEmail(defaultEmailInput);
       setSuccess("Default email updated successfully");
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Failed to update default email");
+    } catch (err: unknown) {
+      setError(
+        err instanceof Error ? err.message : "Failed to update default email",
+      );
     }
   };
 
-  const copyLink = (hash: string) => {
+  const copyLink = (hash: string): void => {
     const link = `${window.location.origin}/survey/${hash}`;
     navigator.clipboard.writeText(link);
     setSuccess("Link copied to clipboard!");

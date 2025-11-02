@@ -47,8 +47,13 @@ export async function updateSurvey(
     throw new Error("Survey not found");
   }
 
+  const existingSurvey = config.surveys[surveyIndex];
+  if (!existingSurvey) {
+    throw new Error("Survey not found");
+  }
+
   // If title is being updated, check for duplicates (excluding current survey)
-  if (updates.title && updates.title !== config.surveys[surveyIndex].title) {
+  if (updates.title && updates.title !== existingSurvey.title) {
     if (
       config.surveys.some(
         (s, i) => i !== surveyIndex && s.title === updates.title,
@@ -59,8 +64,8 @@ export async function updateSurvey(
   }
 
   // Merge updates - handle undefined targetEmail to remove it
-  const updatedSurvey = {
-    ...config.surveys[surveyIndex],
+  const updatedSurvey: Survey = {
+    ...existingSurvey,
     ...updates,
   };
   

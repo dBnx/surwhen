@@ -5,7 +5,13 @@ import { notFound } from "next/navigation";
 import { getSurveyByHash } from "~/lib/surveys";
 
 // Simple Tooltip Component
-function Tooltip({ text, children }: { text: string; children: React.ReactNode }) {
+function Tooltip({
+  text,
+  children,
+}: {
+  text: string;
+  children: React.ReactNode;
+}): React.ReactElement {
   return (
     <div className="group relative inline-flex items-center">
       {children}
@@ -62,7 +68,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       } else {
         setSubmitStatus("error");
       }
-    } catch (error) {
+    } catch (error: unknown) {
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
