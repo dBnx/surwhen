@@ -1,6 +1,5 @@
 import { type NextRequest, NextResponse } from "next/server";
 import { getTranslations } from "next-intl/server";
-import { generateHashFromTitle } from "~/lib/surveys";
 import {
   getSurveyByHashFromFile,
   getTargetEmailFromFile,

@@ -39,7 +39,7 @@ async function ensureTmpFileExists(): Promise<void> {
     try {
       const originalContent = await fs.readFile(originalPath, "utf-8");
       await fs.writeFile(tmpPath, originalContent, "utf-8");
-    } catch (error) {
+    } catch {
       // If original doesn't exist or can't be read, start with empty config
       const defaultConfig: SurveysConfig = {
         defaultTargetEmail: "",

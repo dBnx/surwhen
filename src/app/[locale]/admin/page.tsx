@@ -64,7 +64,7 @@ export default function AdminPage() {
       setDefaultEmail(data.defaultTargetEmail);
       setDefaultEmailInput(data.defaultTargetEmail);
       setLoading(false);
-    } catch (_err: unknown) {
+    } catch {
       setError(t("failedToLoad"));
       setLoading(false);
     }

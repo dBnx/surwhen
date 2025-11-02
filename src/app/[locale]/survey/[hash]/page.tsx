@@ -107,7 +107,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       } else {
         setSubmitStatus("error");
       }
-    } catch (error: unknown) {
+    } catch {
       setSubmitStatus("error");
     } finally {
       setIsSubmitting(false);
