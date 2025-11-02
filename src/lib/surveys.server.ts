@@ -174,3 +174,48 @@ export async function updateDefaultTargetEmail(
   await saveSurveysConfig(config);
 }
 
+export async function mergeSurveysConfig(
+  uploadedConfig: SurveysConfig,
+  conflictPreference: "source" | "existing",
+): Promise<SurveysConfig> {
+  const existingConfig = await getSurveysConfigFromFile();
+  
+  // Create a map of existing surveys by title (hash)
+  const existingSurveysMap = new Map<string, Survey>();
+  for (const survey of existingConfig.surveys) {
+    const hash = generateHashFromTitle(survey.title);
+    existingSurveysMap.set(hash, survey);
+  }
+  
+  // Process uploaded surveys
+  const mergedSurveys: Survey[] = [...existingConfig.surveys];
+  
+  for (const uploadedSurvey of uploadedConfig.surveys) {
+    const hash = generateHashFromTitle(uploadedSurvey.title);
+    const existingSurvey = existingSurveysMap.get(hash);
+    
+    if (existingSurvey) {
+      // Conflict: survey with same title exists
+      if (conflictPreference === "source") {
+        // Replace existing with uploaded
+        const index = mergedSurveys.findIndex(
+          (s) => generateHashFromTitle(s.title) === hash,
+        );
+        if (index !== -1) {
+          mergedSurveys[index] = uploadedSurvey;
+        }
+      }
+      // If conflictPreference === "existing", we keep the existing survey (already in mergedSurveys)
+    } else {
+      // No conflict, add the uploaded survey
+      mergedSurveys.push(uploadedSurvey);
+    }
+  }
+  
+  // For merge, prefer uploaded defaultTargetEmail if provided
+  return {
+    defaultTargetEmail: uploadedConfig.defaultTargetEmail || existingConfig.defaultTargetEmail,
+    surveys: mergedSurveys,
+  };
+}
+

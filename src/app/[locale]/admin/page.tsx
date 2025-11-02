@@ -41,6 +41,9 @@ export default function AdminPage() {
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingHash, setEditingHash] = useState<string | null>(null);
   const [originalTitle, setOriginalTitle] = useState<string>("");
+  const [showUploadModal, setShowUploadModal] = useState(false);
+  const [uploadStrategy, setUploadStrategy] = useState<"replace" | "merge">("replace");
+  const [conflictPreference, setConflictPreference] = useState<"source" | "existing">("source");
 
   const [formData, setFormData] = useState<FormDataState>({
     title: "",
@@ -84,6 +87,12 @@ export default function AdminPage() {
 
     void fetchSurveys();
   }, [fetchSurveys, token, t]);
+
+  useEffect(() => {
+    if (t) {
+      document.title = `SurWhen: ${t("title")}`;
+    }
+  }, [t]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -225,6 +234,79 @@ export default function AdminPage() {
     toast.showSuccess(t("linkCopied"));
   };
 
+  const handleDownloadConfig = async (): Promise<void> => {
+    try {
+      const response = await fetch(`/api/admin/config?token=${token}`);
+      if (!response.ok) {
+        throw new Error(t("failedToDownload"));
+      }
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = "surveys.json";
+      document.body.appendChild(a);
+      a.click();
+      window.URL.revokeObjectURL(url);
+      document.body.removeChild(a);
+      toast.showSuccess(t("configDownloaded"));
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : t("failedToDownload");
+      toast.showError(errorMessage);
+    }
+  };
+
+  const handleUploadConfig = async (
+    e: React.FormEvent<HTMLFormElement>,
+  ): Promise<void> => {
+    e.preventDefault();
+    setError(null);
+
+    const form = e.currentTarget;
+    const formData = new FormData(form);
+    const fileInput = form.querySelector<HTMLInputElement>('input[type="file"]');
+    const file = fileInput?.files?.[0];
+
+    if (!file) {
+      const errorMessage = t("selectConfigFile");
+      setError(errorMessage);
+      toast.showError(errorMessage);
+      return;
+    }
+
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append("file", file);
+      uploadFormData.append("strategy", uploadStrategy);
+      if (uploadStrategy === "merge") {
+        uploadFormData.append("conflictPreference", conflictPreference);
+      }
+
+      const response = await fetch(`/api/admin/config?token=${token}`, {
+        method: "POST",
+        body: uploadFormData,
+      });
+
+      if (!response.ok) {
+        const data = (await response.json()) as ErrorResponse;
+        throw new Error(data.error || t("failedToUpload"));
+      }
+
+      toast.showSuccess(t("configUploaded"));
+      form.reset();
+      setShowUploadModal(false);
+      setUploadStrategy("replace");
+      setConflictPreference("source");
+      await fetchSurveys();
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : t("failedToUpload");
+      setError(errorMessage);
+      toast.showError(errorMessage);
+    }
+  };
+
   if (loading) {
     return (
       <main className="flex min-h-screen items-center justify-center text-white">
@@ -276,6 +358,7 @@ export default function AdminPage() {
             </button>
           </form>
         </div>
+
 
         {/* Add/Edit Survey Form */}
         {showAddForm && (
@@ -336,6 +419,7 @@ export default function AdminPage() {
 
               <div className="flex flex-col gap-2">
                 <label className="text-sm font-medium">{t("targetEmailLabel")}</label>
+                <p className="text-sm text-white/70">{t("targetEmailDescription")}</p>
                 <input
                   type="email"
                   value={formData.targetEmail}
@@ -383,12 +467,26 @@ export default function AdminPage() {
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-2xl font-bold">{t("surveys")}</h2>
             {!showAddForm && (
-              <button
-                onClick={() => setShowAddForm(true)}
-                className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
-              >
-                {t("addSurvey")}
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={handleDownloadConfig}
+                  className="rounded-lg bg-blue-500/30 px-4 py-2 font-medium text-white hover:bg-blue-500/40 focus:outline-none focus:ring-2 focus:ring-blue-500/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {t("downloadButton")}
+                </button>
+                <button
+                  onClick={() => setShowUploadModal(true)}
+                  className="rounded-lg bg-red-500/30 px-4 py-2 font-medium text-white hover:bg-red-500/40 focus:outline-none focus:ring-2 focus:ring-red-500/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {t("uploadButton")}
+                </button>
+                <button
+                  onClick={() => setShowAddForm(true)}
+                  className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {t("addSurvey")}
+                </button>
+              </div>
             )}
           </div>
 
@@ -450,6 +548,117 @@ export default function AdminPage() {
             </div>
           )}
         </div>
+
+        {/* Upload Modal */}
+        {showUploadModal && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20 max-w-2xl w-full mx-4">
+              <h2 className="mb-4 text-2xl font-bold">{t("uploadModalTitle")}</h2>
+              <form onSubmit={handleUploadConfig} className="flex flex-col gap-4">
+                <div className="flex flex-col gap-2">
+                  <input
+                    type="file"
+                    accept=".json"
+                    className="rounded-lg bg-white/25 px-4 py-2 text-white file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:bg-white/25 file:text-white file:cursor-pointer file:hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all"
+                    required
+                  />
+                </div>
+
+                <div className="flex flex-col gap-2">
+                  <label className="text-base font-semibold">{t("uploadModalStrategyLabel")}</label>
+                  <p className="text-sm text-white/70 mb-2">{t("uploadModalStrategyDescription")}</p>
+                  <div className="flex flex-col gap-2">
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="strategy"
+                        value="replace"
+                        checked={uploadStrategy === "replace"}
+                        onChange={(e) => setUploadStrategy(e.target.value as "replace" | "merge")}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium">{t("uploadModalStrategyReplace")}</div>
+                        <div className="text-sm text-white/70">{t("uploadModalStrategyReplaceDescription")}</div>
+                      </div>
+                    </label>
+                    <label className="flex items-start gap-3 cursor-pointer">
+                      <input
+                        type="radio"
+                        name="strategy"
+                        value="merge"
+                        checked={uploadStrategy === "merge"}
+                        onChange={(e) => setUploadStrategy(e.target.value as "replace" | "merge")}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-medium">{t("uploadModalStrategyMerge")}</div>
+                        <div className="text-sm text-white/70">{t("uploadModalStrategyMergeDescription")}</div>
+                      </div>
+                    </label>
+                  </div>
+                </div>
+
+                {uploadStrategy === "merge" && (
+                  <div className="flex flex-col gap-2">
+                    <label className="text-base font-semibold">{t("uploadModalConflictLabel")}</label>
+                    <div className="flex flex-col gap-2">
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="conflictPreference"
+                          value="source"
+                          checked={conflictPreference === "source"}
+                          onChange={(e) => setConflictPreference(e.target.value as "source" | "existing")}
+                          className="mt-1"
+                        />
+                        <div>
+                          <div className="font-medium">{t("uploadModalConflictSource")}</div>
+                          <div className="text-sm text-white/70">{t("uploadModalConflictSourceDescription")}</div>
+                        </div>
+                      </label>
+                      <label className="flex items-start gap-3 cursor-pointer">
+                        <input
+                          type="radio"
+                          name="conflictPreference"
+                          value="existing"
+                          checked={conflictPreference === "existing"}
+                          onChange={(e) => setConflictPreference(e.target.value as "source" | "existing")}
+                          className="mt-1"
+                        />
+                        <div>
+                          <div className="font-medium">{t("uploadModalConflictExisting")}</div>
+                          <div className="text-sm text-white/70">{t("uploadModalConflictExistingDescription")}</div>
+                        </div>
+                      </label>
+                    </div>
+                  </div>
+                )}
+
+                <div className="flex gap-4">
+                  <button
+                    type="submit"
+                    className="rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {t("uploadConfigButton")}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setShowUploadModal(false);
+                      setUploadStrategy("replace");
+                      setConflictPreference("source");
+                      setError(null);
+                    }}
+                    className="rounded-lg bg-white/15 px-6 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {tCommon("cancel")}
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        )}
       </div>
     </main>
   );

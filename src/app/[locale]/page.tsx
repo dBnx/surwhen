@@ -1,4 +1,9 @@
+import { type Metadata } from "next";
 import { getTranslations } from "next-intl/server";
+
+export const metadata: Metadata = {
+  title: "SurWhen",
+};
 
 export default async function HomePage() {
   const t = await getTranslations("home");
