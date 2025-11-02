@@ -3,4 +3,9 @@
 @theme {
   --font-sans: var(--font-geist-sans), ui-sans-serif, system-ui, sans-serif,
     "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol", "Noto Color Emoji";
+  
+  /* Gradient colors */
+  --color-gradient-start: #2563eb;
+  --color-gradient-mid: #0f172a;
+  --color-gradient-end: #000000;
 }

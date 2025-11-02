@@ -57,13 +57,13 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white">
       <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16">
-        <h1 className="text-4xl font-extrabold tracking-tight text-white sm:text-5xl">
+        <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl">
           {survey.title}
         </h1>
         
-        <div className="flex max-w-md flex-col gap-6 rounded-xl bg-white/10 p-8">
+        <div className="flex max-w-md flex-col gap-6 rounded-2xl bg-white/15 backdrop-blur-md p-8 shadow-2xl border border-white/20">
           <p className="text-lg text-center">{survey.description}</p>
           
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
@@ -77,7 +77,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
                 required
                 value={name}
                 onChange={(e) => setName(e.target.value)}
-                className="rounded-lg bg-white/20 px-4 py-2 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                 placeholder="Your name"
               />
             </div>
@@ -91,7 +91,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="rounded-lg bg-white/20 px-4 py-2 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                 placeholder="your.email@example.com"
               />
             </div>
@@ -105,13 +105,13 @@ export default function SurveyPage({ params }: SurveyPageProps) {
                 required
                 value={reason}
                 onChange={(e) => setReason(e.target.value)}
-                className="rounded-lg bg-white/20 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="rounded-lg bg-white/25 px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
               >
-                <option value="" className="bg-[#15162c]">
+                <option value="" className="bg-[var(--color-gradient-start)]">
                   Select a reason...
                 </option>
                 {survey.reasons.map((r) => (
-                  <option key={r} value={r} className="bg-[#15162c]">
+                  <option key={r} value={r} className="bg-[var(--color-gradient-start)]">
                     {r}
                   </option>
                 ))}
@@ -121,7 +121,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             <button
               type="submit"
               disabled={isSubmitting}
-              className="mt-4 rounded-lg bg-white/20 px-6 py-3 font-medium text-white hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50 disabled:cursor-not-allowed disabled:opacity-50"
+              className="mt-4 rounded-lg bg-white/25 px-6 py-3 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 disabled:cursor-not-allowed disabled:opacity-50 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
             >
               {isSubmitting ? "Sending..." : "Send"}
             </button>

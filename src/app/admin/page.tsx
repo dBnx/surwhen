@@ -196,7 +196,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white">
         <p>Loading...</p>
       </main>
     );
@@ -204,7 +204,7 @@ export default function AdminPage() {
 
   if (error && !token) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white">
+      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white">
         <div className="text-center">
           <p className="text-red-400">{error}</p>
         </div>
@@ -213,39 +213,39 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-[#2e026d] to-[#15162c] text-white p-8">
+    <main className="min-h-screen bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white p-8">
       <div className="container mx-auto max-w-6xl">
-        <h1 className="mb-8 text-4xl font-extrabold tracking-tight">
+        <h1 className="mb-8 text-4xl font-extrabold tracking-tight drop-shadow-lg">
           Admin Panel
         </h1>
 
         {error && (
-          <div className="mb-4 rounded-lg bg-red-500/20 p-4 text-red-400">
+          <div className="mb-4 rounded-xl bg-red-500/20 backdrop-blur-sm p-4 text-red-300 border border-red-400/30 shadow-lg">
             {error}
           </div>
         )}
 
         {success && (
-          <div className="mb-4 rounded-lg bg-green-500/20 p-4 text-green-400">
+          <div className="mb-4 rounded-xl bg-green-500/20 backdrop-blur-sm p-4 text-green-300 border border-green-400/30 shadow-lg">
             {success}
           </div>
         )}
 
         {/* Default Email Configuration */}
-        <div className="mb-8 rounded-xl bg-white/10 p-6">
+        <div className="mb-8 rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
           <h2 className="mb-4 text-2xl font-bold">Default Target Email</h2>
           <form onSubmit={handleUpdateDefaultEmail} className="flex gap-4">
             <input
               type="email"
               value={defaultEmail}
               onChange={(e) => setDefaultEmail(e.target.value)}
-              className="flex-1 rounded-lg bg-white/20 px-4 py-2 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="flex-1 rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
               placeholder="default@example.com"
               required
             />
             <button
               type="submit"
-              className="rounded-lg bg-white/20 px-6 py-2 font-medium text-white hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
             >
               Update
             </button>
@@ -254,7 +254,7 @@ export default function AdminPage() {
 
         {/* Add/Edit Survey Form */}
         {showAddForm && (
-          <div className="mb-8 rounded-xl bg-white/10 p-6">
+          <div className="mb-8 rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
             <h2 className="mb-4 text-2xl font-bold">
               {editingHash ? "Edit Survey" : "Add New Survey"}
             </h2>
@@ -274,7 +274,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="rounded-lg bg-white/20 px-4 py-2 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                   required
                 />
               </div>
@@ -286,7 +286,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="rounded-lg bg-white/20 px-4 py-2 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                   rows={3}
                   required
                 />
@@ -301,7 +301,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, reasons: e.target.value })
                   }
-                  className="rounded-lg bg-white/20 px-4 py-2 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                   rows={4}
                   placeholder="Option 1&#10;Option 2&#10;Option 3"
                   required
@@ -316,7 +316,7 @@ export default function AdminPage() {
                   onChange={(e) =>
                     setFormData({ ...formData, targetEmail: e.target.value })
                   }
-                  className="rounded-lg bg-white/20 px-4 py-2 text-white placeholder:text-white/60 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                   placeholder="Leave empty to use default"
                 />
               </div>
@@ -324,7 +324,7 @@ export default function AdminPage() {
               <div className="flex gap-4">
                 <button
                   type="submit"
-                  className="rounded-lg bg-white/20 px-6 py-2 font-medium text-white hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                 >
                   {editingHash ? "Update" : "Add"} Survey
                 </button>
@@ -343,7 +343,7 @@ export default function AdminPage() {
                     setError(null);
                     setSuccess(null);
                   }}
-                  className="rounded-lg bg-white/10 px-6 py-2 font-medium text-white hover:bg-white/20 focus:outline-none focus:ring-2 focus:ring-white/50"
+                  className="rounded-lg bg-white/15 px-6 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
                 >
                   Cancel
                 </button>
@@ -353,13 +353,13 @@ export default function AdminPage() {
         )}
 
         {/* Surveys List */}
-        <div className="rounded-xl bg-white/10 p-6">
+        <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
           <div className="mb-4 flex items-center justify-between">
             <h2 className="text-2xl font-bold">Surveys</h2>
             {!showAddForm && (
               <button
                 onClick={() => setShowAddForm(true)}
-                className="rounded-lg bg-white/20 px-4 py-2 font-medium text-white hover:bg-white/30 focus:outline-none focus:ring-2 focus:ring-white/50"
+                className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
               >
                 Add Survey
               </button>
