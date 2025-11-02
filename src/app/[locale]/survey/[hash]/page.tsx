@@ -79,8 +79,8 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   };
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white">
-      <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16">
+    <main className="flex flex-col items-center justify-center text-white min-h-screen">
+      <div className="container flex flex-col items-center justify-center gap-8 px-4 py-16 w-full">
         <h1 className="text-4xl font-extrabold tracking-tight text-white drop-shadow-lg sm:text-5xl">
           {survey.title}
         </h1>

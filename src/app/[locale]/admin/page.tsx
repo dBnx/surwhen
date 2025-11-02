@@ -219,7 +219,7 @@ export default function AdminPage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white">
+      <main className="flex min-h-screen items-center justify-center text-white">
         <p>{tCommon("loading")}</p>
       </main>
     );
@@ -227,7 +227,7 @@ export default function AdminPage() {
 
   if (error && !token) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white">
+      <main className="flex min-h-screen items-center justify-center text-white">
         <div className="text-center">
           <p className="text-red-400">{error}</p>
         </div>
@@ -236,7 +236,7 @@ export default function AdminPage() {
   }
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-[var(--color-gradient-start)] via-[var(--color-gradient-mid)] to-[var(--color-gradient-end)] text-white p-8">
+    <main className="min-h-screen text-white p-8">
       <div className="container mx-auto max-w-6xl">
         <h1 className="mb-8 text-4xl font-extrabold tracking-tight drop-shadow-lg">
           {t("title")}

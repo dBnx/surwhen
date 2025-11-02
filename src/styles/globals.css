@@ -20,10 +20,16 @@ html, body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background: linear-gradient(to bottom right, var(--color-gradient-start), var(--color-gradient-mid), var(--color-gradient-end));
+  background-attachment: fixed;
   color: white;
 }
 
 /* Make sure the root element expands and scrolling reveals the gradient rather than white */
 #__next, main {
   min-height: 100%;
+}
+
+/* Remove gradient from main elements since it's already on body/html */
+main {
+  background: transparent;
 }
