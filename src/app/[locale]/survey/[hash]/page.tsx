@@ -4,6 +4,7 @@ import { use, useState, useEffect } from "react";
 import { notFound } from "next/navigation";
 import { useTranslations } from "next-intl";
 import type { Survey } from "~/lib/surveys";
+import { useToast } from "~/components/ToastProvider";
 
 // Simple Tooltip Component
 function Tooltip({
@@ -32,6 +33,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   const { hash } = use(params);
   const t = useTranslations("survey");
   const tCommon = useTranslations("common");
+  const toast = useToast();
 
   const [survey, setSurvey] = useState<Survey | null>(null);
   const [loading, setLoading] = useState(true);
@@ -41,7 +43,6 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   const [email, setEmail] = useState("");
   const [reason, setReason] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [submitStatus, setSubmitStatus] = useState<"idle" | "success" | "error">("idle");
 
   useEffect(() => {
     async function fetchSurvey() {
@@ -83,7 +84,6 @@ export default function SurveyPage({ params }: SurveyPageProps) {
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     setIsSubmitting(true);
-    setSubmitStatus("idle");
 
     try {
       const response = await fetch("/api/submit", {
@@ -100,15 +100,15 @@ export default function SurveyPage({ params }: SurveyPageProps) {
       });
 
       if (response.ok) {
-        setSubmitStatus("success");
+        toast.showSuccess(t("submitSuccess"));
         setName("");
         setEmail("");
         setReason("");
       } else {
-        setSubmitStatus("error");
+        toast.showError(t("submitError"));
       }
     } catch {
-      setSubmitStatus("error");
+      toast.showError(t("submitError"));
     } finally {
       setIsSubmitting(false);
     }
@@ -234,18 +234,6 @@ export default function SurveyPage({ params }: SurveyPageProps) {
             >
               {isSubmitting ? tCommon("sending") : tCommon("send")}
             </button>
-
-            {submitStatus === "success" && (
-              <p className="mt-2 text-center text-green-400">
-                {t("submitSuccess")}
-              </p>
-            )}
-
-            {submitStatus === "error" && (
-              <p className="mt-2 text-center text-red-400">
-                {t("submitError")}
-              </p>
-            )}
           </form>
         </div>
       </div>
