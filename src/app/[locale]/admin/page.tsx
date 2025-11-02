@@ -76,7 +76,7 @@ export default function AdminPage() {
       toast.showError(errorMessage);
       setLoading(false);
     }
-  }, [token, t]);
+  }, [token, t, toast]);
 
   useEffect(() => {
     if (!token) {
@@ -264,7 +264,6 @@ export default function AdminPage() {
     setError(null);
 
     const form = e.currentTarget;
-    const formData = new FormData(form);
     const fileInput = form.querySelector<HTMLInputElement>('input[type="file"]');
     const file = fileInput?.files?.[0];
 

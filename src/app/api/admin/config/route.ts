@@ -6,7 +6,7 @@ import {
   saveSurveysConfig,
   mergeSurveysConfig,
 } from "~/lib/surveys.server";
-import type { SurveysConfig } from "~/lib/surveys";
+import type { SurveysConfig, Survey } from "~/lib/surveys";
 import { validateSurvey } from "~/lib/surveys";
 
 function validateToken(request: NextRequest): boolean {
@@ -71,7 +71,7 @@ function validateConfig(config: unknown): {
   }
 
   for (let i = 0; i < c.surveys.length; i++) {
-    const survey = c.surveys[i];
+    const survey = c.surveys[i] as unknown;
     if (!survey || typeof survey !== "object") {
       return {
         valid: false,
@@ -79,7 +79,7 @@ function validateConfig(config: unknown): {
       };
     }
 
-    const validation = validateSurvey(survey);
+    const validation = validateSurvey(survey as Partial<Survey>);
     if (!validation.valid) {
       return {
         valid: false,
