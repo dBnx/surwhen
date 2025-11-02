@@ -15,6 +15,7 @@ export default function AdminPage() {
   const token = searchParams.get("token");
 
   const [defaultEmail, setDefaultEmail] = useState("");
+  const [defaultEmailInput, setDefaultEmailInput] = useState("");
   const [surveys, setSurveys] = useState<SurveyWithHash[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -55,6 +56,7 @@ export default function AdminPage() {
       const data: SurveysResponse = await response.json();
       setSurveys(data.surveys);
       setDefaultEmail(data.defaultTargetEmail);
+      setDefaultEmailInput(data.defaultTargetEmail);
       setLoading(false);
     } catch (err) {
       setError("Failed to load surveys");
@@ -173,7 +175,7 @@ export default function AdminPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ defaultTargetEmail: defaultEmail }),
+        body: JSON.stringify({ defaultTargetEmail: defaultEmailInput }),
       });
 
       if (!response.ok) {
@@ -181,6 +183,7 @@ export default function AdminPage() {
         throw new Error(data.error || "Failed to update default email");
       }
 
+      setDefaultEmail(defaultEmailInput);
       setSuccess("Default email updated successfully");
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to update default email");
@@ -234,13 +237,19 @@ export default function AdminPage() {
         {/* Default Email Configuration */}
         <div className="mb-8 rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
           <h2 className="mb-4 text-2xl font-bold">Default Target Email</h2>
+          {(!defaultEmail || defaultEmail.trim() === "") && (
+            <div className="mb-4 rounded-lg bg-red-500/20 p-4 text-red-300 border border-red-400/30">
+              <strong>Warning:</strong> Default target email is required! Surveys without a specific target email will fail to send.
+            </div>
+          )}
           <form onSubmit={handleUpdateDefaultEmail} className="flex gap-4">
             <input
               type="email"
-              value={defaultEmail}
-              onChange={(e) => setDefaultEmail(e.target.value)}
+              value={defaultEmailInput}
+              onChange={(e) => setDefaultEmailInput(e.target.value)}
               className="flex-1 rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
               placeholder="default@example.com"
+              maxLength={500}
               required
             />
             <button
@@ -275,6 +284,7 @@ export default function AdminPage() {
                     setFormData({ ...formData, title: e.target.value })
                   }
                   className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
+                  maxLength={1000}
                   required
                 />
               </div>
@@ -288,6 +298,7 @@ export default function AdminPage() {
                   }
                   className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                   rows={3}
+                  maxLength={5000}
                   required
                 />
               </div>
@@ -304,6 +315,7 @@ export default function AdminPage() {
                   className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                   rows={4}
                   placeholder="Option 1&#10;Option 2&#10;Option 3"
+                  maxLength={10000}
                   required
                 />
               </div>
@@ -318,6 +330,7 @@ export default function AdminPage() {
                   }
                   className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                   placeholder="Leave empty to use default"
+                  maxLength={500}
                 />
               </div>
 

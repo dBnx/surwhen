@@ -108,6 +108,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
                 onChange={(e) => setName(e.target.value)}
                 className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                 placeholder="Your name"
+                maxLength={1000}
               />
             </div>
 
@@ -139,6 +140,7 @@ export default function SurveyPage({ params }: SurveyPageProps) {
                 onChange={(e) => setEmail(e.target.value)}
                 className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all"
                 placeholder="your.email@example.com (optional)"
+                maxLength={500}
               />
             </div>
 
