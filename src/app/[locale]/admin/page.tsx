@@ -100,9 +100,23 @@ export default function AdminPage() {
   }, [token, t, toast]);
 
   const fetchAccentColor = useCallback(async (): Promise<void> => {
+    const lastUpdateTime = sessionStorage.getItem("accent-color-last-update");
+    const lastColor = sessionStorage.getItem("accent-color-last-color");
+    
+    if (lastUpdateTime && lastColor && isValidHexColor(lastColor)) {
+      const timeSinceUpdate = Date.now() - Number.parseInt(lastUpdateTime, 10);
+      if (timeSinceUpdate < 300000) {
+        setAccentColor(lastColor);
+        applyColorToDOM(lastColor);
+        return;
+      }
+    }
+
     applyColorToDOM("#808080");
     try {
-      const response = await fetch("/api/accent-color");
+      const response = await fetch("/api/accent-color", {
+        cache: "no-store",
+      });
       if (response.ok) {
         const data = (await response.json()) as { accentColor: string };
         setAccentColor(data.accentColor);
@@ -327,13 +341,13 @@ export default function AdminPage() {
         throw new Error(data.error || t("failedToUpdateAccentColor"));
       }
 
-      setAccentColor(color);
-      applyColorToDOM(color);
-      
       if (typeof window !== "undefined") {
         sessionStorage.setItem("accent-color-last-update", Date.now().toString());
         sessionStorage.setItem("accent-color-last-color", color);
       }
+      
+      setAccentColor(color);
+      applyColorToDOM(color);
       
       toast.showSuccess(t("accentColorUpdated"));
     } catch (err: unknown) {

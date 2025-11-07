@@ -22,7 +22,7 @@ export async function GET(
       { accentColor },
       {
         headers: {
-          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+          "Cache-Control": "public, s-maxage=0, must-revalidate",
         },
       },
     );
@@ -33,7 +33,7 @@ export async function GET(
       {
         status: 200,
         headers: {
-          "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30",
+          "Cache-Control": "public, s-maxage=0, must-revalidate",
         },
       },
     );

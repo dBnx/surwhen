@@ -4,7 +4,7 @@ import { useEffect } from "react";
 
 const DEFAULT_ACCENT_COLOR = "#2563eb";
 const NEUTRAL_COLOR = "#808080";
-const RECENT_UPDATE_THRESHOLD_MS = 2000;
+const RECENT_UPDATE_THRESHOLD_MS = 300000;
 const LAST_UPDATE_KEY = "accent-color-last-update";
 const LAST_COLOR_KEY = "accent-color-last-color";
 
@@ -23,8 +23,6 @@ function applyColorToDOM(color: string): void {
 
 export default function AccentColorLoader() {
   useEffect(() => {
-    applyColorToDOM(NEUTRAL_COLOR);
-
     const lastUpdateTime = sessionStorage.getItem(LAST_UPDATE_KEY);
     const lastColor = sessionStorage.getItem(LAST_COLOR_KEY);
     
@@ -36,9 +34,13 @@ export default function AccentColorLoader() {
       }
     }
 
+    applyColorToDOM(NEUTRAL_COLOR);
+
     async function loadAccentColor() {
       try {
-        const response = await fetch("/api/accent-color");
+        const response = await fetch("/api/accent-color", {
+          cache: "no-store",
+        });
         if (response.ok) {
           const data = (await response.json()) as { accentColor: string };
           const color = data.accentColor;
