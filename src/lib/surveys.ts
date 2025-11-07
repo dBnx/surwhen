@@ -11,6 +11,7 @@ export interface Survey {
 export interface SurveysConfig {
   defaultTargetEmail: string;
   surveys: Survey[];
+  accentColor?: string;
 }
 
 export function getSurveysConfig(): SurveysConfig {

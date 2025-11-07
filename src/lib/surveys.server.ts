@@ -36,6 +36,7 @@ async function ensureStorageFileExists(): Promise<void> {
     const defaultConfig: SurveysConfig = {
       defaultTargetEmail: "",
       surveys: [],
+      accentColor: undefined,
     };
     await storage.write(STORAGE_KEY, JSON.stringify(defaultConfig, null, 2));
   }
@@ -164,6 +165,18 @@ export async function updateDefaultTargetEmail(
   await saveSurveysConfig(config);
 }
 
+export async function updateAccentColor(
+  color: string | null,
+): Promise<void> {
+  const config = await getSurveysConfigFromFile();
+  if (color === null || color === "") {
+    delete config.accentColor;
+  } else {
+    config.accentColor = color;
+  }
+  await saveSurveysConfig(config);
+}
+
 export async function mergeSurveysConfig(
   uploadedConfig: SurveysConfig,
   conflictPreference: "source" | "existing",
@@ -202,9 +215,10 @@ export async function mergeSurveysConfig(
     }
   }
   
-  // For merge, prefer uploaded defaultTargetEmail if provided
+  // For merge, prefer uploaded defaultTargetEmail and accentColor if provided
   return {
     defaultTargetEmail: uploadedConfig.defaultTargetEmail || existingConfig.defaultTargetEmail,
+    accentColor: uploadedConfig.accentColor ?? existingConfig.accentColor,
     surveys: mergedSurveys,
   };
 }

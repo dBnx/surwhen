@@ -2,6 +2,7 @@ import { type NextRequest, NextResponse } from "next/server";
 import { env } from "~/env";
 import {
   updateDefaultTargetEmail,
+  updateAccentColor,
   getSurveysConfigFromFile,
   saveSurveysConfig,
   mergeSurveysConfig,
@@ -17,7 +18,8 @@ function validateToken(request: NextRequest): boolean {
 }
 
 interface ConfigRequestBody {
-  defaultTargetEmail: string;
+  defaultTargetEmail?: string;
+  accentColor?: string;
 }
 
 export async function GET(
@@ -60,6 +62,13 @@ function validateConfig(config: unknown): {
     return {
       valid: false,
       error: "defaultTargetEmail is required and must be a string",
+    };
+  }
+
+  if (c.accentColor !== undefined && typeof c.accentColor !== "string") {
+    return {
+      valid: false,
+      error: "accentColor must be a string if provided",
     };
   }
 
@@ -188,19 +197,19 @@ export async function PUT(
 
   try {
     const body = (await request.json()) as ConfigRequestBody;
-    const { defaultTargetEmail } = body;
+    const { defaultTargetEmail, accentColor } = body;
 
-    if (!defaultTargetEmail) {
-      return NextResponse.json(
-        { error: "defaultTargetEmail is required" },
-        { status: 400 },
-      );
+    if (defaultTargetEmail !== undefined) {
+      await updateDefaultTargetEmail(defaultTargetEmail);
     }
 
-    await updateDefaultTargetEmail(defaultTargetEmail);
+    if (accentColor !== undefined) {
+      await updateAccentColor(accentColor);
+    }
+
     return NextResponse.json({ success: true });
   } catch (error: unknown) {
-    console.error("Error updating default email:", error);
+    console.error("Error updating config:", error);
     if (error instanceof Error) {
       return NextResponse.json(
         { error: error.message },

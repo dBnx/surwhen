@@ -90,7 +90,12 @@
     "uploadModalConflictExistingDescription": "Keep the existing survey when conflicts occur",
     "qrCodeTitle": "QR Code",
     "downloadQRCode": "Download QR Code",
-    "qrCodeCopied": "QR code image copied to clipboard!"
+    "qrCodeCopied": "QR code image copied to clipboard!",
+    "styling": "Styling",
+    "accentColor": "Accent Color",
+    "accentColorReset": "Reset to Default",
+    "accentColorUpdated": "Accent color updated successfully",
+    "failedToUpdateAccentColor": "Failed to update accent color"
   },
   "errors": {
     "missingFields": "Missing required fields",

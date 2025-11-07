@@ -90,7 +90,12 @@
     "uploadModalConflictExistingDescription": "Die vorhandene Umfrage bei Konflikten behalten",
     "qrCodeTitle": "QR-Code",
     "downloadQRCode": "QR-Code herunterladen",
-    "qrCodeCopied": "QR-Code-Bild in Zwischenablage kopiert!"
+    "qrCodeCopied": "QR-Code-Bild in Zwischenablage kopiert!",
+    "styling": "Styling",
+    "accentColor": "Akzentfarbe",
+    "accentColorReset": "Auf Standard zurücksetzen",
+    "accentColorUpdated": "Akzentfarbe erfolgreich aktualisiert",
+    "failedToUpdateAccentColor": "Akzentfarbe konnte nicht aktualisiert werden"
   },
   "errors": {
     "missingFields": "Erforderliche Felder fehlen",

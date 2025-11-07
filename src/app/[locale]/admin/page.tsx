@@ -39,6 +39,7 @@ export default function AdminPage() {
   const [surveys, setSurveys] = useState<SurveyWithHash[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [accentColor, setAccentColor] = useState("#808080");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingHash, setEditingHash] = useState<string | null>(null);
@@ -82,6 +83,36 @@ export default function AdminPage() {
     }
   }, [token, t, toast]);
 
+  const fetchAccentColor = useCallback(async (): Promise<void> => {
+    document.documentElement.style.setProperty(
+      "--color-gradient-start",
+      "#808080",
+    );
+    try {
+      const response = await fetch("/api/accent-color");
+      if (response.ok) {
+        const data = (await response.json()) as { accentColor: string };
+        setAccentColor(data.accentColor);
+        document.documentElement.style.setProperty(
+          "--color-gradient-start",
+          data.accentColor,
+        );
+      } else {
+        document.documentElement.style.setProperty(
+          "--color-gradient-start",
+          "#2563eb",
+        );
+        setAccentColor("#2563eb");
+      }
+    } catch {
+      document.documentElement.style.setProperty(
+        "--color-gradient-start",
+        "#2563eb",
+      );
+      setAccentColor("#2563eb");
+    }
+  }, []);
+
   useEffect(() => {
     if (!token) {
       setError(t("tokenRequired"));
@@ -90,7 +121,8 @@ export default function AdminPage() {
     }
 
     void fetchSurveys();
-  }, [fetchSurveys, token, t]);
+    void fetchAccentColor();
+  }, [fetchSurveys, fetchAccentColor, token, t]);
 
   useEffect(() => {
     const titleText = t("title");
@@ -228,6 +260,72 @@ export default function AdminPage() {
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : t("failedToUpdateEmail");
+      setError(errorMessage);
+      toast.showError(errorMessage);
+    }
+  };
+
+  const handleAccentColorChange = (newColor: string): void => {
+    setAccentColor(newColor);
+    document.documentElement.style.setProperty(
+      "--color-gradient-start",
+      newColor,
+    );
+  };
+
+  const handleUpdateAccentColor = async (): Promise<void> => {
+    setError(null);
+
+    try {
+      const response = await fetch(`/api/admin/config?token=${token}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ accentColor }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json()) as ErrorResponse;
+        throw new Error(data.error || t("failedToUpdateAccentColor"));
+      }
+
+      toast.showSuccess(t("accentColorUpdated"));
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : t("failedToUpdateAccentColor");
+      setError(errorMessage);
+      toast.showError(errorMessage);
+    }
+  };
+
+  const handleResetAccentColor = async (): Promise<void> => {
+    const defaultColor = "#2563eb";
+    setAccentColor(defaultColor);
+    document.documentElement.style.setProperty(
+      "--color-gradient-start",
+      defaultColor,
+    );
+    
+    setError(null);
+    try {
+      const response = await fetch(`/api/admin/config?token=${token}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ accentColor: null }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json()) as ErrorResponse;
+        throw new Error(data.error || t("failedToUpdateAccentColor"));
+      }
+
+      toast.showSuccess(t("accentColorUpdated"));
+    } catch (err: unknown) {
+      const errorMessage =
+        err instanceof Error ? err.message : t("failedToUpdateAccentColor");
       setError(errorMessage);
       toast.showError(errorMessage);
     }
@@ -616,6 +714,41 @@ export default function AdminPage() {
               </table>
             </div>
           )}
+        </div>
+
+        {/* Styling Section */}
+        <div className="mt-8 rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
+          <h2 className="mb-4 text-2xl font-bold">{t("styling")}</h2>
+          <div className="flex flex-col gap-4">
+            <div className="flex items-center gap-4 w-full">
+              <label className="text-sm font-medium flex-shrink-0">{t("accentColor")}</label>
+              <div className="flex items-center gap-3 flex-1">
+                <input
+                  type="color"
+                  value={accentColor}
+                  onChange={(e) => handleAccentColorChange(e.target.value)}
+                  onBlur={handleUpdateAccentColor}
+                  className="h-12 w-20 rounded-lg cursor-pointer border-2 border-white/30 bg-white/25 hover:bg-white/35 transition-all flex-shrink-0"
+                  title={accentColor}
+                />
+                <input
+                  type="text"
+                  value={accentColor}
+                  onChange={(e) => handleAccentColorChange(e.target.value)}
+                  onBlur={handleUpdateAccentColor}
+                  className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all font-mono text-sm flex-1"
+                  maxLength={7}
+                  pattern="^#[0-9A-Fa-f]{6}$"
+                />
+              </div>
+              <button
+                onClick={handleResetAccentColor}
+                className="rounded-lg bg-white/15 px-4 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
+              >
+                {t("accentColorReset")}
+              </button>
+            </div>
+          </div>
         </div>
 
         {/* Upload Modal */}
