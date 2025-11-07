@@ -19,8 +19,11 @@ html, body {
   font-family: var(--font-sans);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  background: linear-gradient(to bottom right, var(--color-gradient-start), var(--color-gradient-mid), var(--color-gradient-end));
-  background-attachment: scroll;
+  background-color: #000000;
+  background-image: linear-gradient(to bottom right, var(--color-gradient-start), var(--color-gradient-mid), var(--color-gradient-end));
+  background-attachment: fixed;
+  background-size: 100% 100vh;
+  background-repeat: no-repeat;
   color: white;
 }
 
