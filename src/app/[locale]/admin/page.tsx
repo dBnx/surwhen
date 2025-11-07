@@ -50,6 +50,8 @@ export default function AdminPage() {
   const [qrModalHash, setQrModalHash] = useState<string | null>(null);
   const qrCodeRef = useRef<HTMLDivElement>(null);
   const colorUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+  const lastAccentColorUpdateRef = useRef<number>(0);
+  const RATE_LIMIT_WINDOW_MS = 500;
 
   const [formData, setFormData] = useState<FormDataState>({
     title: "",
@@ -319,6 +321,13 @@ export default function AdminPage() {
       return;
     }
 
+    const now = Date.now();
+    if (now - lastAccentColorUpdateRef.current < RATE_LIMIT_WINDOW_MS) {
+      toast.showError(t("tooManyRequests") || "Too many requests. Please wait before updating again.");
+      return;
+    }
+
+    lastAccentColorUpdateRef.current = now;
     setError(null);
 
     try {
@@ -362,6 +371,14 @@ export default function AdminPage() {
 
   const handleResetAccentColor = async (): Promise<void> => {
     const defaultColor = "#2563eb";
+    
+    const now = Date.now();
+    if (now - lastAccentColorUpdateRef.current < RATE_LIMIT_WINDOW_MS) {
+      toast.showError(t("tooManyRequests") || "Too many requests. Please wait before updating again.");
+      return;
+    }
+
+    lastAccentColorUpdateRef.current = now;
     setAccentColor(defaultColor);
     document.documentElement.style.setProperty(
       "--color-gradient-start",
