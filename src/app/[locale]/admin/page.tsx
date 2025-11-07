@@ -389,14 +389,16 @@ export default function AdminPage() {
   const handleCopyQRImage = async (): Promise<void> => {
     try {
       convertQRToCanvas((canvas) => {
-        canvas.toBlob(async (blob) => {
+        canvas.toBlob((blob) => {
           if (!blob) return;
-          const item = new ClipboardItem({ "image/png": blob });
-          await navigator.clipboard.write([item]);
-          toast.showSuccess(t("qrCodeCopied"));
+          void (async () => {
+            const item = new ClipboardItem({ "image/png": blob });
+            await navigator.clipboard.write([item]);
+            toast.showSuccess(t("qrCodeCopied"));
+          })();
         }, "image/png");
       });
-    } catch (err) {
+    } catch (_err) {
       toast.showError(t("failedToCopy") || "Failed to copy QR code");
     }
   };

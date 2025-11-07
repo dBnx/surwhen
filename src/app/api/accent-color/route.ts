@@ -8,7 +8,7 @@ function isValidHexColor(color: string): boolean {
 }
 
 export async function GET(
-  request: NextRequest,
+  _request: NextRequest,
 ): Promise<NextResponse> {
   try {
     const config = await getSurveysConfigFromFile();
