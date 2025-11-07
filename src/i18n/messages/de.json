@@ -7,7 +7,8 @@
     "edit": "Bearbeiten",
     "delete": "Löschen",
     "loading": "Lädt...",
-    "optional": "(Optional)"
+    "optional": "(Optional)",
+    "apply": "Anwenden"
   },
   "home": {
     "title": "Umfragezugang",

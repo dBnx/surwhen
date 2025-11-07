@@ -271,15 +271,26 @@ export default function AdminPage() {
 
   const handleAccentColorChange = (newColor: string): void => {
     setAccentColor(newColor);
+  };
+
+  const handleColorPickerChange = (newColor: string): void => {
+    setAccentColor(newColor);
     if (isValidHexColor(newColor)) {
       document.documentElement.style.setProperty(
         "--color-gradient-start",
         newColor,
       );
+      void handleUpdateAccentColor(newColor);
     }
   };
 
-  const handleUpdateAccentColor = async (): Promise<void> => {
+  const handleUpdateAccentColor = async (colorToSave?: string): Promise<void> => {
+    const color = colorToSave ?? accentColor;
+    if (!isValidHexColor(color)) {
+      toast.showError(t("failedToUpdateAccentColor"));
+      return;
+    }
+
     setError(null);
 
     try {
@@ -288,7 +299,7 @@ export default function AdminPage() {
         headers: {
           "Content-Type": "application/json",
         },
-        body: JSON.stringify({ accentColor }),
+        body: JSON.stringify({ accentColor: color }),
       });
 
       if (!response.ok) {
@@ -296,6 +307,10 @@ export default function AdminPage() {
         throw new Error(data.error || t("failedToUpdateAccentColor"));
       }
 
+      document.documentElement.style.setProperty(
+        "--color-gradient-start",
+        color,
+      );
       toast.showSuccess(t("accentColorUpdated"));
     } catch (err: unknown) {
       const errorMessage =
@@ -734,8 +749,7 @@ export default function AdminPage() {
                 <input
                   type="color"
                   value={accentColor}
-                  onChange={(e) => handleAccentColorChange(e.target.value)}
-                  onBlur={handleUpdateAccentColor}
+                  onChange={(e) => handleColorPickerChange(e.target.value)}
                   className="h-12 w-20 rounded-lg cursor-pointer border-2 border-white/30 bg-white/25 hover:bg-white/35 transition-all flex-shrink-0"
                   title={accentColor}
                 />
@@ -746,12 +760,6 @@ export default function AdminPage() {
                     const value = e.target.value;
                     if (value.length <= 7) {
                       handleAccentColorChange(value);
-                    }
-                  }}
-                  onBlur={(e) => {
-                    const value = e.target.value;
-                    if (isValidHexColor(value)) {
-                      void handleUpdateAccentColor();
                     }
                   }}
                   className={`rounded-lg px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 transition-all font-mono text-sm flex-1 ${
@@ -765,6 +773,13 @@ export default function AdminPage() {
                 />
               </div>
               <button
+                onClick={() => void handleUpdateAccentColor()}
+                disabled={!isValidHexColor(accentColor)}
+                className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0"
+              >
+                {tCommon("apply")}
+              </button>
+              <button
                 onClick={handleResetAccentColor}
                 className="rounded-lg bg-white/15 px-4 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
               >
@@ -777,7 +792,7 @@ export default function AdminPage() {
         {/* Upload Modal */}
         {showUploadModal && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20 max-w-2xl w-full mx-4">
+            <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20 w-full max-w-[calc(100vw-2rem)] sm:max-w-2xl mx-4">
               <h2 className="mb-4 text-2xl font-bold">{t("uploadModalTitle")}</h2>
               <form onSubmit={handleUploadConfig} className="flex flex-col gap-4">
                 <div className="flex flex-col gap-2">
@@ -888,7 +903,7 @@ export default function AdminPage() {
         {/* QR Code Modal */}
         {qrModalHash && (
           <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
-            <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20 max-w-md w-full mx-4">
+            <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20 w-full max-w-[calc(100vw-2rem)] sm:max-w-md mx-4">
               <h2 className="mb-4 text-2xl font-bold">{t("qrCodeTitle")}</h2>
               <div className="flex flex-col items-center gap-4">
                 <div
