@@ -108,5 +108,12 @@
     "message": "Diese Einladung ist abgelaufen oder ungültig.",
     "submessage": "Ein Einladungslink muss verwendet werden, um auf Umfragen zuzugreifen.",
     "returnHome": "Zur Startseite zurückkehren"
+  },
+  "email": {
+    "greeting": "Hallo,",
+    "selectedOption": "Sie haben ausgewählt: {option}",
+    "surveyDescription": "Umfragebeschreibung",
+    "submissionDetails": "Einreichungsdetails",
+    "closing": "Vielen Dank für Ihre Teilnahme!"
   }
 }

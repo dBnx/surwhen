@@ -74,6 +74,8 @@ export async function POST(
       userEmail: email,
       reason,
       surveyTitle: survey.title,
+      surveyDescription: survey.description,
+      locale,
     });
 
     return NextResponse.json({ success: true });

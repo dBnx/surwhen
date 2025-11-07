@@ -108,6 +108,13 @@
     "message": "This invitation has expired or is invalid.",
     "submessage": "An invitation link must be used to access surveys.",
     "returnHome": "Return to Home"
+  },
+  "email": {
+    "greeting": "Hello,",
+    "selectedOption": "You have selected: {option}",
+    "surveyDescription": "Survey Description",
+    "submissionDetails": "Submission Details",
+    "closing": "Thank you for your participation!"
   }
 }
 
