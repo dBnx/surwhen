@@ -290,6 +290,17 @@ export default function AdminPage() {
         newColor,
       );
       
+      const body = document.body;
+      const html = document.documentElement;
+      
+      const gradient = `linear-gradient(to bottom right, ${newColor}, var(--color-gradient-mid), var(--color-gradient-end))`;
+      body.style.backgroundImage = gradient;
+      html.style.backgroundImage = gradient;
+      
+      requestAnimationFrame(() => {
+        void body.offsetHeight;
+      });
+      
       if (colorUpdateTimeoutRef.current) {
         clearTimeout(colorUpdateTimeoutRef.current);
       }
@@ -329,6 +340,12 @@ export default function AdminPage() {
         color,
       );
       
+      const body = document.body;
+      const html = document.documentElement;
+      const gradient = `linear-gradient(to bottom right, ${color}, var(--color-gradient-mid), var(--color-gradient-end))`;
+      body.style.backgroundImage = gradient;
+      html.style.backgroundImage = gradient;
+      
       if (typeof window !== "undefined") {
         sessionStorage.setItem("accent-color-last-update", Date.now().toString());
         sessionStorage.setItem("accent-color-last-color", color);
@@ -350,6 +367,12 @@ export default function AdminPage() {
       "--color-gradient-start",
       defaultColor,
     );
+    
+    const body = document.body;
+    const html = document.documentElement;
+    const gradient = `linear-gradient(to bottom right, ${defaultColor}, var(--color-gradient-mid), var(--color-gradient-end))`;
+    body.style.backgroundImage = gradient;
+    html.style.backgroundImage = gradient;
     
     setError(null);
     try {
