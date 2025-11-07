@@ -60,6 +60,19 @@ export default function AdminPage() {
     targetEmail: "",
   });
 
+  const isValidHexColor = (color: string): boolean => {
+    return /^#[0-9A-Fa-f]{6}$/.test(color);
+  };
+
+  const applyColorToDOM = (color: string): void => {
+    if (!isValidHexColor(color)) return;
+    
+    document.documentElement.style.setProperty("--color-gradient-start", color);
+    const gradient = `linear-gradient(to bottom right, ${color}, var(--color-gradient-mid), var(--color-gradient-end))`;
+    document.body.style.backgroundImage = gradient;
+    document.documentElement.style.backgroundImage = gradient;
+  };
+
   const fetchSurveys = useCallback(async (): Promise<void> => {
     try {
       const response = await fetch(`/api/admin/surveys?token=${token}`);
@@ -87,32 +100,22 @@ export default function AdminPage() {
   }, [token, t, toast]);
 
   const fetchAccentColor = useCallback(async (): Promise<void> => {
-    document.documentElement.style.setProperty(
-      "--color-gradient-start",
-      "#808080",
-    );
+    applyColorToDOM("#808080");
     try {
       const response = await fetch("/api/accent-color");
       if (response.ok) {
         const data = (await response.json()) as { accentColor: string };
         setAccentColor(data.accentColor);
-        document.documentElement.style.setProperty(
-          "--color-gradient-start",
-          data.accentColor,
-        );
+        applyColorToDOM(data.accentColor);
       } else {
-        document.documentElement.style.setProperty(
-          "--color-gradient-start",
-          "#2563eb",
-        );
-        setAccentColor("#2563eb");
+        const defaultColor = "#2563eb";
+        setAccentColor(defaultColor);
+        applyColorToDOM(defaultColor);
       }
     } catch {
-      document.documentElement.style.setProperty(
-        "--color-gradient-start",
-        "#2563eb",
-      );
-      setAccentColor("#2563eb");
+      const defaultColor = "#2563eb";
+      setAccentColor(defaultColor);
+      applyColorToDOM(defaultColor);
     }
   }, []);
 
@@ -276,42 +279,22 @@ export default function AdminPage() {
     }
   };
 
-  const isValidHexColor = (color: string): boolean => {
-    return /^#[0-9A-Fa-f]{6}$/.test(color);
-  };
-
   const handleAccentColorChange = (newColor: string): void => {
     setAccentColor(newColor);
   };
 
   const handleColorPickerChange = (newColor: string): void => {
     setAccentColor(newColor);
-    if (isValidHexColor(newColor)) {
-      document.documentElement.style.setProperty(
-        "--color-gradient-start",
-        newColor,
-      );
-      
-      const body = document.body;
-      const html = document.documentElement;
-      
-      const gradient = `linear-gradient(to bottom right, ${newColor}, var(--color-gradient-mid), var(--color-gradient-end))`;
-      body.style.backgroundImage = gradient;
-      html.style.backgroundImage = gradient;
-      
-      requestAnimationFrame(() => {
-        void body.offsetHeight;
-      });
-      
-      if (colorUpdateTimeoutRef.current) {
-        clearTimeout(colorUpdateTimeoutRef.current);
-      }
-      
-      colorUpdateTimeoutRef.current = setTimeout(() => {
-        void handleUpdateAccentColor(newColor);
-        colorUpdateTimeoutRef.current = null;
-      }, 500);
+    applyColorToDOM(newColor);
+    
+    if (colorUpdateTimeoutRef.current) {
+      clearTimeout(colorUpdateTimeoutRef.current);
     }
+    
+    colorUpdateTimeoutRef.current = setTimeout(() => {
+      void handleUpdateAccentColor(newColor);
+      colorUpdateTimeoutRef.current = null;
+    }, 500);
   };
 
   const handleUpdateAccentColor = async (colorToSave?: string): Promise<void> => {
@@ -344,16 +327,8 @@ export default function AdminPage() {
         throw new Error(data.error || t("failedToUpdateAccentColor"));
       }
 
-      document.documentElement.style.setProperty(
-        "--color-gradient-start",
-        color,
-      );
-      
-      const body = document.body;
-      const html = document.documentElement;
-      const gradient = `linear-gradient(to bottom right, ${color}, var(--color-gradient-mid), var(--color-gradient-end))`;
-      body.style.backgroundImage = gradient;
-      html.style.backgroundImage = gradient;
+      setAccentColor(color);
+      applyColorToDOM(color);
       
       if (typeof window !== "undefined") {
         sessionStorage.setItem("accent-color-last-update", Date.now().toString());
@@ -380,16 +355,7 @@ export default function AdminPage() {
 
     lastAccentColorUpdateRef.current = now;
     setAccentColor(defaultColor);
-    document.documentElement.style.setProperty(
-      "--color-gradient-start",
-      defaultColor,
-    );
-    
-    const body = document.body;
-    const html = document.documentElement;
-    const gradient = `linear-gradient(to bottom right, ${defaultColor}, var(--color-gradient-mid), var(--color-gradient-end))`;
-    body.style.backgroundImage = gradient;
-    html.style.backgroundImage = gradient;
+    applyColorToDOM(defaultColor);
     
     setError(null);
     try {
@@ -842,7 +808,7 @@ export default function AdminPage() {
               </div>
               <div className="flex flex-wrap gap-2 sm:gap-4">
                 <button
-                  onClick={() => void handleUpdateAccentColor()}
+                  onClick={() => void handleUpdateAccentColor(accentColor)}
                   disabled={!isValidHexColor(accentColor)}
                   className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0"
                 >

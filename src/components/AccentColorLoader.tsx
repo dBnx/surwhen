@@ -12,12 +12,18 @@ function isValidHexColor(color: string): boolean {
   return /^#[0-9A-Fa-f]{6}$/i.test(color);
 }
 
+function applyColorToDOM(color: string): void {
+  if (!isValidHexColor(color)) return;
+  
+  document.documentElement.style.setProperty("--color-gradient-start", color);
+  const gradient = `linear-gradient(to bottom right, ${color}, var(--color-gradient-mid), var(--color-gradient-end))`;
+  document.body.style.backgroundImage = gradient;
+  document.documentElement.style.backgroundImage = gradient;
+}
+
 export default function AccentColorLoader() {
   useEffect(() => {
-    document.documentElement.style.setProperty(
-      "--color-gradient-start",
-      NEUTRAL_COLOR,
-    );
+    applyColorToDOM(NEUTRAL_COLOR);
 
     const lastUpdateTime = sessionStorage.getItem(LAST_UPDATE_KEY);
     const lastColor = sessionStorage.getItem(LAST_COLOR_KEY);
@@ -25,10 +31,7 @@ export default function AccentColorLoader() {
     if (lastUpdateTime && lastColor && isValidHexColor(lastColor)) {
       const timeSinceUpdate = Date.now() - Number.parseInt(lastUpdateTime, 10);
       if (timeSinceUpdate < RECENT_UPDATE_THRESHOLD_MS) {
-        document.documentElement.style.setProperty(
-          "--color-gradient-start",
-          lastColor,
-        );
+        applyColorToDOM(lastColor);
         return;
       }
     }
@@ -40,27 +43,15 @@ export default function AccentColorLoader() {
           const data = (await response.json()) as { accentColor: string };
           const color = data.accentColor;
           if (isValidHexColor(color)) {
-            document.documentElement.style.setProperty(
-              "--color-gradient-start",
-              color,
-            );
+            applyColorToDOM(color);
           } else {
-            document.documentElement.style.setProperty(
-              "--color-gradient-start",
-              DEFAULT_ACCENT_COLOR,
-            );
+            applyColorToDOM(DEFAULT_ACCENT_COLOR);
           }
         } else {
-          document.documentElement.style.setProperty(
-            "--color-gradient-start",
-            DEFAULT_ACCENT_COLOR,
-          );
+          applyColorToDOM(DEFAULT_ACCENT_COLOR);
         }
       } catch {
-        document.documentElement.style.setProperty(
-          "--color-gradient-start",
-          DEFAULT_ACCENT_COLOR,
-        );
+        applyColorToDOM(DEFAULT_ACCENT_COLOR);
       }
     }
 
