@@ -743,9 +743,9 @@ export default function AdminPage() {
         <div className="mt-8 rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20">
           <h2 className="mb-4 text-2xl font-bold">{t("styling")}</h2>
           <div className="flex flex-col gap-4">
-            <div className="flex items-center gap-4 w-full">
+            <div className="flex flex-col sm:flex-row sm:items-center gap-4 w-full">
               <label className="text-sm font-medium flex-shrink-0">{t("accentColor")}</label>
-              <div className="flex items-center gap-3 flex-1">
+              <div className="flex items-center gap-3 flex-1 min-w-0">
                 <input
                   type="color"
                   value={accentColor}
@@ -762,7 +762,7 @@ export default function AdminPage() {
                       handleAccentColorChange(value);
                     }
                   }}
-                  className={`rounded-lg px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 transition-all font-mono text-sm flex-1 ${
+                  className={`rounded-lg px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 transition-all font-mono text-sm flex-1 min-w-0 ${
                     isValidHexColor(accentColor)
                       ? "bg-white/25 focus:ring-white/70 focus:bg-white/30"
                       : "bg-red-500/30 border-2 border-red-400/50 focus:ring-red-400/70 focus:bg-red-500/40"
@@ -772,19 +772,21 @@ export default function AdminPage() {
                   placeholder="#000000"
                 />
               </div>
-              <button
-                onClick={() => void handleUpdateAccentColor()}
-                disabled={!isValidHexColor(accentColor)}
-                className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0"
-              >
-                {tCommon("apply")}
-              </button>
-              <button
-                onClick={handleResetAccentColor}
-                className="rounded-lg bg-white/15 px-4 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
-              >
-                {t("accentColorReset")}
-              </button>
+              <div className="flex gap-2 sm:gap-4 flex-shrink-0">
+                <button
+                  onClick={() => void handleUpdateAccentColor()}
+                  disabled={!isValidHexColor(accentColor)}
+                  className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0"
+                >
+                  {tCommon("apply")}
+                </button>
+                <button
+                  onClick={handleResetAccentColor}
+                  className="rounded-lg bg-white/15 px-4 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
+                >
+                  {t("accentColorReset")}
+                </button>
+              </div>
             </div>
           </div>
         </div>
