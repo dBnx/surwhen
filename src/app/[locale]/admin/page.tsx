@@ -772,7 +772,7 @@ export default function AdminPage() {
                   placeholder="#000000"
                 />
               </div>
-              <div className="flex gap-2 sm:gap-4 flex-shrink-0">
+              <div className="flex flex-wrap gap-2 sm:gap-4">
                 <button
                   onClick={() => void handleUpdateAccentColor()}
                   disabled={!isValidHexColor(accentColor)}
@@ -782,7 +782,7 @@ export default function AdminPage() {
                 </button>
                 <button
                   onClick={handleResetAccentColor}
-                  className="rounded-lg bg-white/15 px-4 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex-shrink-0"
+                  className="rounded-lg bg-white/15 px-4 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex-shrink-0 whitespace-nowrap"
                 >
                   {t("accentColorReset")}
                 </button>

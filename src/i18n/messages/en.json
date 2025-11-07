@@ -94,7 +94,7 @@
     "qrCodeCopied": "QR code image copied to clipboard!",
     "styling": "Styling",
     "accentColor": "Accent Color",
-    "accentColorReset": "Reset to Default",
+    "accentColorReset": "Reset",
     "accentColorUpdated": "Accent color updated successfully",
     "failedToUpdateAccentColor": "Failed to update accent color"
   },
