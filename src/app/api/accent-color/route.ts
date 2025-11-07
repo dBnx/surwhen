@@ -18,12 +18,24 @@ export async function GET(
       accentColor = DEFAULT_ACCENT_COLOR;
     }
     
-    return NextResponse.json({ accentColor });
+    return NextResponse.json(
+      { accentColor },
+      {
+        headers: {
+          "Cache-Control": "public, s-maxage=30, stale-while-revalidate=60",
+        },
+      },
+    );
   } catch (error: unknown) {
     console.error("Error fetching accent color:", error);
     return NextResponse.json(
       { accentColor: DEFAULT_ACCENT_COLOR },
-      { status: 200 },
+      {
+        status: 200,
+        headers: {
+          "Cache-Control": "public, s-maxage=10, stale-while-revalidate=30",
+        },
+      },
     );
   }
 }

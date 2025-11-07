@@ -10,11 +10,35 @@ import {
 import type { SurveysConfig, Survey } from "~/lib/surveys";
 import { validateSurvey } from "~/lib/surveys";
 
+const RATE_LIMIT_WINDOW_MS = 500;
+const accentColorUpdateTimes = new Map<string, number>();
+
 function validateToken(request: NextRequest): boolean {
   const token =
     request.nextUrl.searchParams.get("token") ??
     request.headers.get("x-admin-token");
   return token === env.ADMIN_TOKEN;
+}
+
+function getClientIdentifier(request: NextRequest): string {
+  const ip = request.ip ?? request.headers.get("x-forwarded-for") ?? "unknown";
+  const token =
+    request.nextUrl.searchParams.get("token") ??
+    request.headers.get("x-admin-token") ??
+    "";
+  return `${ip}:${token}`;
+}
+
+function checkRateLimit(identifier: string): boolean {
+  const now = Date.now();
+  const lastUpdate = accentColorUpdateTimes.get(identifier);
+  
+  if (lastUpdate !== undefined && now - lastUpdate < RATE_LIMIT_WINDOW_MS) {
+    return false;
+  }
+  
+  accentColorUpdateTimes.set(identifier, now);
+  return true;
 }
 
 interface ConfigRequestBody {
@@ -198,6 +222,22 @@ export async function PUT(
   try {
     const body = (await request.json()) as ConfigRequestBody;
     const { defaultTargetEmail, accentColor } = body;
+
+    if (accentColor !== undefined) {
+      const identifier = getClientIdentifier(request);
+      if (!checkRateLimit(identifier)) {
+        const retryAfter = Math.ceil(RATE_LIMIT_WINDOW_MS / 1000);
+        return NextResponse.json(
+          { error: "Too many requests. Please wait before updating again." },
+          {
+            status: 429,
+            headers: {
+              "Retry-After": retryAfter.toString(),
+            },
+          },
+        );
+      }
+    }
 
     if (defaultTargetEmail !== undefined) {
       await updateDefaultTargetEmail(defaultTargetEmail);

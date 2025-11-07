@@ -49,6 +49,7 @@ export default function AdminPage() {
   const [conflictPreference, setConflictPreference] = useState<"source" | "existing">("source");
   const [qrModalHash, setQrModalHash] = useState<string | null>(null);
   const qrCodeRef = useRef<HTMLDivElement>(null);
+  const colorUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
   const [formData, setFormData] = useState<FormDataState>({
     title: "",
@@ -130,6 +131,14 @@ export default function AdminPage() {
       document.title = `SurWhen: ${titleText}`;
     }
   });
+
+  useEffect(() => {
+    return () => {
+      if (colorUpdateTimeoutRef.current) {
+        clearTimeout(colorUpdateTimeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -280,7 +289,15 @@ export default function AdminPage() {
         "--color-gradient-start",
         newColor,
       );
-      void handleUpdateAccentColor(newColor);
+      
+      if (colorUpdateTimeoutRef.current) {
+        clearTimeout(colorUpdateTimeoutRef.current);
+      }
+      
+      colorUpdateTimeoutRef.current = setTimeout(() => {
+        void handleUpdateAccentColor(newColor);
+        colorUpdateTimeoutRef.current = null;
+      }, 500);
     }
   };
 
@@ -311,6 +328,12 @@ export default function AdminPage() {
         "--color-gradient-start",
         color,
       );
+      
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("accent-color-last-update", Date.now().toString());
+        sessionStorage.setItem("accent-color-last-color", color);
+      }
+      
       toast.showSuccess(t("accentColorUpdated"));
     } catch (err: unknown) {
       const errorMessage =
@@ -341,6 +364,11 @@ export default function AdminPage() {
       if (!response.ok) {
         const data = (await response.json()) as ErrorResponse;
         throw new Error(data.error || t("failedToUpdateAccentColor"));
+      }
+
+      if (typeof window !== "undefined") {
+        sessionStorage.setItem("accent-color-last-update", Date.now().toString());
+        sessionStorage.setItem("accent-color-last-color", defaultColor);
       }
 
       toast.showSuccess(t("accentColorUpdated"));

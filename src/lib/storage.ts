@@ -45,41 +45,110 @@ class LocalStorageBackend implements StorageBackend {
  */
 class BlobStorageBackend implements StorageBackend {
   private token: string;
+  private readonly maxRetries = 3;
+  private readonly initialRetryDelay = 100;
+  private readonly maxRetryDelay = 2000;
 
   constructor(token: string) {
     this.token = token;
   }
 
+  private async sleep(ms: number): Promise<void> {
+    return new Promise((resolve) => setTimeout(resolve, ms));
+  }
+
   async read(key: string): Promise<string> {
-    try {
-      const blob = await head(key, { token: this.token });
-      const response = await fetch(blob.url);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch blob ${key}: ${response.statusText}`);
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      try {
+        const blob = await head(key, { token: this.token });
+        
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 10000);
+        
+        try {
+          const response = await fetch(blob.url, {
+            signal: controller.signal,
+          });
+          clearTimeout(timeoutId);
+          
+          if (!response.ok) {
+            throw new Error(`Failed to fetch blob ${key}: ${response.status} ${response.statusText}`);
+          }
+          
+          return await response.text();
+        } catch (fetchError) {
+          clearTimeout(timeoutId);
+          if (fetchError instanceof Error && fetchError.name === "AbortError") {
+            throw new Error(`Timeout while fetching blob ${key}`);
+          }
+          throw fetchError;
+        }
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        if (error instanceof Error && error.message.includes("not found")) {
+          throw error;
+        }
+        
+        if (attempt < this.maxRetries) {
+          const delay = Math.min(
+            this.initialRetryDelay * Math.pow(2, attempt),
+            this.maxRetryDelay,
+          );
+          await this.sleep(delay);
+          continue;
+        }
       }
-      return await response.text();
-    } catch (error) {
-      if (error instanceof Error && error.message.includes("not found")) {
-        throw error;
-      }
-      throw new Error(`Failed to read blob ${key}: ${error instanceof Error ? error.message : String(error)}`);
     }
+    
+    throw new Error(
+      `Failed to read blob ${key} after ${this.maxRetries + 1} attempts: ${lastError?.message ?? "Unknown error"}`,
+    );
   }
 
   async write(key: string, content: string): Promise<void> {
-    await put(key, content, {
-      access: "public",
-      token: this.token,
-      allowOverwrite: true,
-    });
+    let lastError: Error | null = null;
+    
+    for (let attempt = 0; attempt <= this.maxRetries; attempt++) {
+      try {
+        await put(key, content, {
+          access: "public",
+          token: this.token,
+          allowOverwrite: true,
+        });
+        return;
+      } catch (error) {
+        lastError = error instanceof Error ? error : new Error(String(error));
+        
+        if (attempt < this.maxRetries) {
+          const delay = Math.min(
+            this.initialRetryDelay * Math.pow(2, attempt),
+            this.maxRetryDelay,
+          );
+          await this.sleep(delay);
+          continue;
+        }
+      }
+    }
+    
+    throw new Error(
+      `Failed to write blob ${key} after ${this.maxRetries + 1} attempts: ${lastError?.message ?? "Unknown error"}`,
+    );
   }
 
   async exists(key: string): Promise<boolean> {
     try {
       await head(key, { token: this.token });
       return true;
-    } catch {
-      return false;
+    } catch (error) {
+      if (error instanceof Error && error.message.includes("not found")) {
+        return false;
+      }
+      throw new Error(
+        `Failed to check if blob ${key} exists: ${error instanceof Error ? error.message : String(error)}`,
+      );
     }
   }
 }
