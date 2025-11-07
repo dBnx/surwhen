@@ -22,7 +22,6 @@ html, body {
   background: linear-gradient(to bottom right, var(--color-gradient-start), var(--color-gradient-mid), var(--color-gradient-end));
   background-attachment: fixed;
   color: white;
-  transition: background 1s ease;
 }
 
 /* Make sure the root element expands and scrolling reveals the gradient rather than white */

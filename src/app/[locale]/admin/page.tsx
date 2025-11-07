@@ -265,12 +265,18 @@ export default function AdminPage() {
     }
   };
 
+  const isValidHexColor = (color: string): boolean => {
+    return /^#[0-9A-Fa-f]{6}$/.test(color);
+  };
+
   const handleAccentColorChange = (newColor: string): void => {
     setAccentColor(newColor);
-    document.documentElement.style.setProperty(
-      "--color-gradient-start",
-      newColor,
-    );
+    if (isValidHexColor(newColor)) {
+      document.documentElement.style.setProperty(
+        "--color-gradient-start",
+        newColor,
+      );
+    }
   };
 
   const handleUpdateAccentColor = async (): Promise<void> => {
@@ -734,11 +740,26 @@ export default function AdminPage() {
                 <input
                   type="text"
                   value={accentColor}
-                  onChange={(e) => handleAccentColorChange(e.target.value)}
-                  onBlur={handleUpdateAccentColor}
-                  className="rounded-lg bg-white/25 px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 focus:ring-white/70 focus:bg-white/30 transition-all font-mono text-sm flex-1"
+                  onChange={(e) => {
+                    const value = e.target.value;
+                    if (value.length <= 7) {
+                      handleAccentColorChange(value);
+                    }
+                  }}
+                  onBlur={(e) => {
+                    const value = e.target.value;
+                    if (isValidHexColor(value)) {
+                      void handleUpdateAccentColor();
+                    }
+                  }}
+                  className={`rounded-lg px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 transition-all font-mono text-sm flex-1 ${
+                    isValidHexColor(accentColor)
+                      ? "bg-white/25 focus:ring-white/70 focus:bg-white/30"
+                      : "bg-red-500/30 border-2 border-red-400/50 focus:ring-red-400/70 focus:bg-red-500/40"
+                  }`}
                   maxLength={7}
                   pattern="^#[0-9A-Fa-f]{6}$"
+                  placeholder="#000000"
                 />
               </div>
               <button

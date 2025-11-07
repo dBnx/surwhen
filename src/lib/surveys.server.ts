@@ -168,6 +168,11 @@ export async function updateDefaultTargetEmail(
 export async function updateAccentColor(
   color: string | null,
 ): Promise<void> {
+  if (color !== null && color !== "") {
+    if (!/^#[0-9A-Fa-f]{6}$/i.test(color)) {
+      throw new Error("Invalid color format. Must be a valid hex color (#RRGGBB).");
+    }
+  }
   const config = await getSurveysConfigFromFile();
   if (color === null || color === "") {
     delete config.accentColor;
