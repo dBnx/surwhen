@@ -48,6 +48,7 @@ export default function AdminPage() {
   const [uploadStrategy, setUploadStrategy] = useState<"replace" | "merge">("replace");
   const [conflictPreference, setConflictPreference] = useState<"source" | "existing">("source");
   const [qrModalHash, setQrModalHash] = useState<string | null>(null);
+  const [qrImageDataUrl, setQrImageDataUrl] = useState<string | null>(null);
   const qrCodeRef = useRef<HTMLDivElement>(null);
   const colorUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
   const lastAccentColorUpdateRef = useRef<number>(0);
@@ -100,19 +101,15 @@ export default function AdminPage() {
   }, [token, t, toast]);
 
   const fetchAccentColor = useCallback(async (): Promise<void> => {
-    const lastUpdateTime = sessionStorage.getItem("accent-color-last-update");
     const lastColor = sessionStorage.getItem("accent-color-last-color");
     
-    if (lastUpdateTime && lastColor && isValidHexColor(lastColor)) {
-      const timeSinceUpdate = Date.now() - Number.parseInt(lastUpdateTime, 10);
-      if (timeSinceUpdate < 300000) {
-        setAccentColor(lastColor);
-        applyColorToDOM(lastColor);
-        return;
-      }
+    if (lastColor && isValidHexColor(lastColor)) {
+      setAccentColor(lastColor);
+      applyColorToDOM(lastColor);
+    } else {
+      applyColorToDOM("#808080");
     }
 
-    applyColorToDOM("#808080");
     try {
       const response = await fetch("/api/accent-color", {
         cache: "no-store",
@@ -158,6 +155,20 @@ export default function AdminPage() {
       }
     };
   }, []);
+
+  useEffect(() => {
+    if (qrModalHash) {
+      const timer = setTimeout(() => {
+        convertQRToCanvas((canvas) => {
+          const dataUrl = canvas.toDataURL("image/png");
+          setQrImageDataUrl(dataUrl);
+        });
+      }, 100);
+      return () => clearTimeout(timer);
+    } else {
+      setQrImageDataUrl(null);
+    }
+  }, [qrModalHash]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -960,12 +971,21 @@ export default function AdminPage() {
                   ref={qrCodeRef}
                   className="rounded-lg bg-white p-4 flex items-center justify-center"
                 >
-                  <QRCodeSVG
-                    value={`${window.location.origin}/survey/${qrModalHash}`}
-                    size={256}
-                    level="H"
-                    includeMargin={false}
-                  />
+                  <div className="hidden md:block">
+                    <QRCodeSVG
+                      value={`${window.location.origin}/survey/${qrModalHash}`}
+                      size={256}
+                      level="H"
+                      includeMargin={false}
+                    />
+                  </div>
+                  {qrImageDataUrl && (
+                    <img
+                      src={qrImageDataUrl}
+                      alt="QR Code"
+                      className="block md:hidden w-64 h-64"
+                    />
+                  )}
                 </div>
                 <p className="text-white/80 text-sm break-all text-center">
                   {`${window.location.origin}/survey/${qrModalHash}`}
@@ -981,7 +1001,7 @@ export default function AdminPage() {
                   </button>
                   <button
                     onClick={() => void handleCopyQRImage()}
-                    className="flex-1 rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                    className="hidden md:flex flex-1 rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
                   >
                     Copy Image
                   </button>

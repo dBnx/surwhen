@@ -23,18 +23,13 @@ function applyColorToDOM(color: string): void {
 
 export default function AccentColorLoader() {
   useEffect(() => {
-    const lastUpdateTime = sessionStorage.getItem(LAST_UPDATE_KEY);
     const lastColor = sessionStorage.getItem(LAST_COLOR_KEY);
     
-    if (lastUpdateTime && lastColor && isValidHexColor(lastColor)) {
-      const timeSinceUpdate = Date.now() - Number.parseInt(lastUpdateTime, 10);
-      if (timeSinceUpdate < RECENT_UPDATE_THRESHOLD_MS) {
-        applyColorToDOM(lastColor);
-        return;
-      }
+    if (lastColor && isValidHexColor(lastColor)) {
+      applyColorToDOM(lastColor);
+    } else {
+      applyColorToDOM(NEUTRAL_COLOR);
     }
-
-    applyColorToDOM(NEUTRAL_COLOR);
 
     async function loadAccentColor() {
       try {
