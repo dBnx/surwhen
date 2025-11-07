@@ -4,8 +4,6 @@ import { useEffect } from "react";
 
 const DEFAULT_ACCENT_COLOR = "#2563eb";
 const NEUTRAL_COLOR = "#808080";
-const RECENT_UPDATE_THRESHOLD_MS = 300000;
-const LAST_UPDATE_KEY = "accent-color-last-update";
 const LAST_COLOR_KEY = "accent-color-last-color";
 
 function isValidHexColor(color: string): boolean {

@@ -27,6 +27,19 @@ interface FormDataState {
   targetEmail: string;
 }
 
+const isValidHexColor = (color: string): boolean => {
+  return /^#[0-9A-Fa-f]{6}$/.test(color);
+};
+
+const applyColorToDOM = (color: string): void => {
+  if (!isValidHexColor(color)) return;
+  
+  document.documentElement.style.setProperty("--color-gradient-start", color);
+  const gradient = `linear-gradient(to bottom right, ${color}, var(--color-gradient-mid), var(--color-gradient-end))`;
+  document.body.style.backgroundImage = gradient;
+  document.documentElement.style.backgroundImage = gradient;
+};
+
 export default function AdminPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -60,19 +73,6 @@ export default function AdminPage() {
     reasons: "",
     targetEmail: "",
   });
-
-  const isValidHexColor = (color: string): boolean => {
-    return /^#[0-9A-Fa-f]{6}$/.test(color);
-  };
-
-  const applyColorToDOM = (color: string): void => {
-    if (!isValidHexColor(color)) return;
-    
-    document.documentElement.style.setProperty("--color-gradient-start", color);
-    const gradient = `linear-gradient(to bottom right, ${color}, var(--color-gradient-mid), var(--color-gradient-end))`;
-    document.body.style.backgroundImage = gradient;
-    document.documentElement.style.backgroundImage = gradient;
-  };
 
   const fetchSurveys = useCallback(async (): Promise<void> => {
     try {
