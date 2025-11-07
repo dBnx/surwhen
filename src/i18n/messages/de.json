@@ -87,7 +87,10 @@
     "uploadModalConflictSource": "Quelle bevorzugen (Hochgeladen)",
     "uploadModalConflictSourceDescription": "Die hochgeladene Umfrage bei Konflikten verwenden",
     "uploadModalConflictExisting": "Vorhandenes bevorzugen",
-    "uploadModalConflictExistingDescription": "Die vorhandene Umfrage bei Konflikten behalten"
+    "uploadModalConflictExistingDescription": "Die vorhandene Umfrage bei Konflikten behalten",
+    "qrCodeTitle": "QR-Code",
+    "downloadQRCode": "QR-Code herunterladen",
+    "qrCodeCopied": "QR-Code-Bild in Zwischenablage kopiert!"
   },
   "errors": {
     "missingFields": "Erforderliche Felder fehlen",

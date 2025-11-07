@@ -1,8 +1,10 @@
 "use client";
 
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import { useTranslations } from "next-intl";
+import { QRCodeSVG } from "qrcode.react";
+import { QrCode } from "lucide-react";
 import type { SurveyWithHash } from "~/lib/surveys";
 import { useToast } from "~/components/ToastProvider";
 
@@ -44,6 +46,8 @@ export default function AdminPage() {
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadStrategy, setUploadStrategy] = useState<"replace" | "merge">("replace");
   const [conflictPreference, setConflictPreference] = useState<"source" | "existing">("source");
+  const [qrModalHash, setQrModalHash] = useState<string | null>(null);
+  const qrCodeRef = useRef<HTMLDivElement>(null);
 
   const [formData, setFormData] = useState<FormDataState>({
     title: "",
@@ -89,10 +93,11 @@ export default function AdminPage() {
   }, [fetchSurveys, token, t]);
 
   useEffect(() => {
-    if (t) {
-      document.title = `SurWhen: ${t("title")}`;
+    const titleText = t("title");
+    if (titleText) {
+      document.title = `SurWhen: ${titleText}`;
     }
-  }, [t]);
+  });
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -232,6 +237,64 @@ export default function AdminPage() {
     const link = `${window.location.origin}/survey/${hash}`;
     void navigator.clipboard.writeText(link);
     toast.showSuccess(t("linkCopied"));
+  };
+
+  const convertQRToCanvas = (callback: (canvas: HTMLCanvasElement) => void): void => {
+    const canvas = document.createElement("canvas");
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
+
+    const size = 512;
+    canvas.width = size;
+    canvas.height = size;
+
+    const qrCodeSvg = qrCodeRef.current?.querySelector("svg");
+    if (!qrCodeSvg) return;
+
+    const svgData = new XMLSerializer().serializeToString(qrCodeSvg);
+    const svgBlob = new Blob([svgData], { type: "image/svg+xml;charset=utf-8" });
+    const url = URL.createObjectURL(svgBlob);
+
+    const img = new Image();
+    img.onload = () => {
+      ctx.fillStyle = "#ffffff";
+      ctx.fillRect(0, 0, size, size);
+      ctx.drawImage(img, 0, 0, size, size);
+      URL.revokeObjectURL(url);
+      callback(canvas);
+    };
+    img.src = url;
+  };
+
+  const handleDownloadQR = (hash: string): void => {
+    convertQRToCanvas((canvas) => {
+      canvas.toBlob((blob) => {
+        if (!blob) return;
+        const downloadUrl = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = downloadUrl;
+        a.download = `qr-code-${hash}.png`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(downloadUrl);
+      }, "image/png");
+    });
+  };
+
+  const handleCopyQRImage = async (): Promise<void> => {
+    try {
+      convertQRToCanvas((canvas) => {
+        canvas.toBlob(async (blob) => {
+          if (!blob) return;
+          const item = new ClipboardItem({ "image/png": blob });
+          await navigator.clipboard.write([item]);
+          toast.showSuccess(t("qrCodeCopied"));
+        }, "image/png");
+      });
+    } catch (err) {
+      toast.showError(t("failedToCopy") || "Failed to copy QR code");
+    }
   };
 
   const handleDownloadConfig = async (): Promise<void> => {
@@ -527,6 +590,13 @@ export default function AdminPage() {
                       <td className="px-4 py-2">
                         <div className="flex flex-wrap gap-2">
                           <button
+                            onClick={() => setQrModalHash(survey.hash)}
+                            className="rounded bg-green-500/20 px-3 py-1 text-sm text-green-300 hover:bg-green-500/30 flex items-center gap-1"
+                            title={t("qrCodeTitle")}
+                          >
+                            <QrCode size={16} />
+                          </button>
+                          <button
                             onClick={() => handleEdit(survey)}
                             className="rounded bg-blue-500/20 px-3 py-1 text-sm text-blue-300 hover:bg-blue-500/30"
                           >
@@ -565,7 +635,6 @@ export default function AdminPage() {
 
                 <div className="flex flex-col gap-2">
                   <label className="text-base font-semibold">{t("uploadModalStrategyLabel")}</label>
-                  <p className="text-sm text-white/70 mb-2">{t("uploadModalStrategyDescription")}</p>
                   <div className="flex flex-col gap-2">
                     <label className="flex items-start gap-3 cursor-pointer">
                       <input
@@ -601,6 +670,7 @@ export default function AdminPage() {
                 {uploadStrategy === "merge" && (
                   <div className="flex flex-col gap-2">
                     <label className="text-base font-semibold">{t("uploadModalConflictLabel")}</label>
+                    <p className="text-sm text-white/70 mb-2">{t("uploadModalStrategyDescription")}</p>
                     <div className="flex flex-col gap-2">
                       <label className="flex items-start gap-3 cursor-pointer">
                         <input
@@ -655,6 +725,56 @@ export default function AdminPage() {
                   </button>
                 </div>
               </form>
+            </div>
+          </div>
+        )}
+
+        {/* QR Code Modal */}
+        {qrModalHash && (
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+            <div className="rounded-2xl bg-white/15 backdrop-blur-md p-6 shadow-2xl border border-white/20 max-w-md w-full mx-4">
+              <h2 className="mb-4 text-2xl font-bold">{t("qrCodeTitle")}</h2>
+              <div className="flex flex-col items-center gap-4">
+                <div
+                  ref={qrCodeRef}
+                  className="rounded-lg bg-white p-4 flex items-center justify-center"
+                >
+                  <QRCodeSVG
+                    value={`${window.location.origin}/survey/${qrModalHash}`}
+                    size={256}
+                    level="H"
+                    includeMargin={false}
+                  />
+                </div>
+                <p className="text-white/80 text-sm break-all text-center">
+                  {`${window.location.origin}/survey/${qrModalHash}`}
+                </p>
+                <div className="flex gap-4 w-full">
+                  <button
+                    onClick={() => {
+                      handleDownloadQR(qrModalHash);
+                    }}
+                    className="flex-1 rounded-lg bg-blue-500/30 px-6 py-2 font-medium text-white hover:bg-blue-500/40 focus:outline-none focus:ring-2 focus:ring-blue-500/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {t("downloadQRCode")}
+                  </button>
+                  <button
+                    onClick={() => void handleCopyQRImage()}
+                    className="flex-1 rounded-lg bg-white/25 px-6 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    Copy Image
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setQrModalHash(null);
+                  }}
+                  className="w-full rounded-lg bg-white/15 px-6 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98]"
+                >
+                  {tCommon("cancel")}
+                </button>
+              </div>
             </div>
           </div>
         )}
