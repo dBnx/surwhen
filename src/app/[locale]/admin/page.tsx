@@ -7,6 +7,8 @@ import { QRCodeSVG } from "qrcode.react";
 import { QrCode } from "lucide-react";
 import type { SurveyWithHash } from "~/lib/surveys";
 import { useToast } from "~/components/ToastProvider";
+import { useAccentColor } from "~/hooks/useAccentColor";
+import { isValidHexColor, DEFAULT_ACCENT_COLOR } from "~/lib/color";
 
 interface SurveysResponse {
   defaultTargetEmail: string;
@@ -27,19 +29,6 @@ interface FormDataState {
   targetEmail: string;
 }
 
-const isValidHexColor = (color: string): boolean => {
-  return /^#[0-9A-Fa-f]{6}$/.test(color);
-};
-
-const applyColorToDOM = (color: string): void => {
-  if (!isValidHexColor(color)) return;
-  
-  document.documentElement.style.setProperty("--color-gradient-start", color);
-  const gradient = `linear-gradient(to bottom right, ${color}, var(--color-gradient-mid), var(--color-gradient-end))`;
-  document.body.style.backgroundImage = gradient;
-  document.documentElement.style.backgroundImage = gradient;
-};
-
 export default function AdminPage() {
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -52,7 +41,7 @@ export default function AdminPage() {
   const [surveys, setSurveys] = useState<SurveyWithHash[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [accentColor, setAccentColor] = useState("#808080");
+  const [localAccentColor, setLocalAccentColor] = useState("#808080");
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingHash, setEditingHash] = useState<string | null>(null);
@@ -63,9 +52,43 @@ export default function AdminPage() {
   const [qrModalHash, setQrModalHash] = useState<string | null>(null);
   const [qrImageDataUrl, setQrImageDataUrl] = useState<string | null>(null);
   const qrCodeRef = useRef<HTMLDivElement>(null);
-  const colorUpdateTimeoutRef = useRef<NodeJS.Timeout | null>(null);
-  const lastAccentColorUpdateRef = useRef<number>(0);
-  const RATE_LIMIT_WINDOW_MS = 500;
+
+  const handleSaveAccentColor = useCallback(
+    async (color: string): Promise<void> => {
+      if (!token) {
+        throw new Error("Token required");
+      }
+
+      const response = await fetch(`/api/admin/config?token=${token}`, {
+        method: "PUT",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ accentColor: color }),
+      });
+
+      if (!response.ok) {
+        const data = (await response.json()) as ErrorResponse;
+        throw new Error(data.error || t("failedToUpdateAccentColor"));
+      }
+    },
+    [token, t],
+  );
+
+  const {
+    accentColor,
+    setAccentColor: setAccentColorFromHook,
+    saveAccentColor,
+    saveAccentColorDebounced,
+  } = useAccentColor({
+    onSave: handleSaveAccentColor,
+  });
+
+  useEffect(() => {
+    if (accentColor && isValidHexColor(accentColor)) {
+      setLocalAccentColor(accentColor);
+    }
+  }, [accentColor]);
 
   const [formData, setFormData] = useState<FormDataState>({
     title: "",
@@ -100,36 +123,6 @@ export default function AdminPage() {
     }
   }, [token, t, toast]);
 
-  const fetchAccentColor = useCallback(async (): Promise<void> => {
-    const lastColor = sessionStorage.getItem("accent-color-last-color");
-    
-    if (lastColor && isValidHexColor(lastColor)) {
-      setAccentColor(lastColor);
-      applyColorToDOM(lastColor);
-    } else {
-      applyColorToDOM("#808080");
-    }
-
-    try {
-      const response = await fetch("/api/accent-color", {
-        cache: "no-store",
-      });
-      if (response.ok) {
-        const data = (await response.json()) as { accentColor: string };
-        setAccentColor(data.accentColor);
-        applyColorToDOM(data.accentColor);
-      } else {
-        const defaultColor = "#2563eb";
-        setAccentColor(defaultColor);
-        applyColorToDOM(defaultColor);
-      }
-    } catch {
-      const defaultColor = "#2563eb";
-      setAccentColor(defaultColor);
-      applyColorToDOM(defaultColor);
-    }
-  }, []);
-
   useEffect(() => {
     if (!token) {
       setError(t("tokenRequired"));
@@ -138,8 +131,7 @@ export default function AdminPage() {
     }
 
     void fetchSurveys();
-    void fetchAccentColor();
-  }, [fetchSurveys, fetchAccentColor, token, t]);
+  }, [fetchSurveys, token, t]);
 
   useEffect(() => {
     const titleText = t("title");
@@ -148,13 +140,6 @@ export default function AdminPage() {
     }
   });
 
-  useEffect(() => {
-    return () => {
-      if (colorUpdateTimeoutRef.current) {
-        clearTimeout(colorUpdateTimeoutRef.current);
-      }
-    };
-  }, []);
 
   useEffect(() => {
     if (qrModalHash) {
@@ -305,61 +290,22 @@ export default function AdminPage() {
   };
 
   const handleAccentColorChange = (newColor: string): void => {
-    setAccentColor(newColor);
+    setLocalAccentColor(newColor);
   };
 
   const handleColorPickerChange = (newColor: string): void => {
-    setAccentColor(newColor);
-    applyColorToDOM(newColor);
-    
-    if (colorUpdateTimeoutRef.current) {
-      clearTimeout(colorUpdateTimeoutRef.current);
-    }
-    
-    colorUpdateTimeoutRef.current = setTimeout(() => {
-      void handleUpdateAccentColor(newColor);
-      colorUpdateTimeoutRef.current = null;
-    }, 500);
+    saveAccentColorDebounced(newColor);
   };
 
-  const handleUpdateAccentColor = async (colorToSave?: string): Promise<void> => {
-    const color = colorToSave ?? accentColor;
-    if (!isValidHexColor(color)) {
+  const handleUpdateAccentColor = async (): Promise<void> => {
+    if (!isValidHexColor(localAccentColor)) {
       toast.showError(t("failedToUpdateAccentColor"));
       return;
     }
 
-    const now = Date.now();
-    if (now - lastAccentColorUpdateRef.current < RATE_LIMIT_WINDOW_MS) {
-      toast.showError(t("tooManyRequests") || "Too many requests. Please wait before updating again.");
-      return;
-    }
-
-    lastAccentColorUpdateRef.current = now;
     setError(null);
-
     try {
-      const response = await fetch(`/api/admin/config?token=${token}`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ accentColor: color }),
-      });
-
-      if (!response.ok) {
-        const data = (await response.json()) as ErrorResponse;
-        throw new Error(data.error || t("failedToUpdateAccentColor"));
-      }
-
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("accent-color-last-update", Date.now().toString());
-        sessionStorage.setItem("accent-color-last-color", color);
-      }
-      
-      setAccentColor(color);
-      applyColorToDOM(color);
-      
+      await saveAccentColor(localAccentColor);
       toast.showSuccess(t("accentColorUpdated"));
     } catch (err: unknown) {
       const errorMessage =
@@ -370,18 +316,6 @@ export default function AdminPage() {
   };
 
   const handleResetAccentColor = async (): Promise<void> => {
-    const defaultColor = "#2563eb";
-    
-    const now = Date.now();
-    if (now - lastAccentColorUpdateRef.current < RATE_LIMIT_WINDOW_MS) {
-      toast.showError(t("tooManyRequests") || "Too many requests. Please wait before updating again.");
-      return;
-    }
-
-    lastAccentColorUpdateRef.current = now;
-    setAccentColor(defaultColor);
-    applyColorToDOM(defaultColor);
-    
     setError(null);
     try {
       const response = await fetch(`/api/admin/config?token=${token}`, {
@@ -397,11 +331,8 @@ export default function AdminPage() {
         throw new Error(data.error || t("failedToUpdateAccentColor"));
       }
 
-      if (typeof window !== "undefined") {
-        sessionStorage.setItem("accent-color-last-update", Date.now().toString());
-        sessionStorage.setItem("accent-color-last-color", defaultColor);
-      }
-
+      setAccentColorFromHook(DEFAULT_ACCENT_COLOR, true);
+      setLocalAccentColor(DEFAULT_ACCENT_COLOR);
       toast.showSuccess(t("accentColorUpdated"));
     } catch (err: unknown) {
       const errorMessage =
@@ -814,7 +745,7 @@ export default function AdminPage() {
                 />
                 <input
                   type="text"
-                  value={accentColor}
+                  value={localAccentColor}
                   onChange={(e) => {
                     const value = e.target.value;
                     if (value.length <= 7) {
@@ -822,7 +753,7 @@ export default function AdminPage() {
                     }
                   }}
                   className={`rounded-lg px-4 py-2 text-white placeholder:text-white/70 focus:outline-none focus:ring-2 transition-all font-mono text-sm flex-1 min-w-0 ${
-                    isValidHexColor(accentColor)
+                    isValidHexColor(localAccentColor)
                       ? "bg-white/25 focus:ring-white/70 focus:bg-white/30"
                       : "bg-red-500/30 border-2 border-red-400/50 focus:ring-red-400/70 focus:bg-red-500/40"
                   }`}
@@ -833,8 +764,8 @@ export default function AdminPage() {
               </div>
               <div className="flex flex-wrap gap-2 sm:gap-4">
                 <button
-                  onClick={() => void handleUpdateAccentColor(accentColor)}
-                  disabled={!isValidHexColor(accentColor)}
+                  onClick={() => void handleUpdateAccentColor()}
+                  disabled={!isValidHexColor(localAccentColor)}
                   className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0"
                 >
                   {tCommon("apply")}
