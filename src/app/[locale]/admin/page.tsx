@@ -52,6 +52,14 @@ export default function AdminPage() {
   const [qrModalHash, setQrModalHash] = useState<string | null>(null);
   const [qrImageDataUrl, setQrImageDataUrl] = useState<string | null>(null);
   const qrCodeRef = useRef<HTMLDivElement>(null);
+  const initialFetchAttemptedRef = useRef(false);
+  const tRef = useRef(t);
+  const toastRef = useRef(toast);
+
+  useEffect(() => {
+    tRef.current = t;
+    toastRef.current = toast;
+  }, [t, toast]);
 
   const handleSaveAccentColor = useCallback(
     async (color: string): Promise<void> => {
@@ -97,39 +105,50 @@ export default function AdminPage() {
     targetEmail: "",
   });
 
-  const fetchSurveys = useCallback(async (): Promise<void> => {
+  const fetchSurveys = useCallback(async (force = false): Promise<void> => {
+    if (!token) {
+      return;
+    }
+
+    if (!force && initialFetchAttemptedRef.current) {
+      return;
+    }
+
     try {
       const response = await fetch(`/api/admin/surveys?token=${token}`);
       if (response.status === 401) {
-        const errorMessage = t("invalidToken");
+        const errorMessage = tRef.current("invalidToken");
         setError(errorMessage);
-        toast.showError(errorMessage);
+        toastRef.current.showError(errorMessage);
         setLoading(false);
         return;
       }
       if (!response.ok) {
-        throw new Error(t("failedToLoad"));
+        throw new Error(tRef.current("failedToLoad"));
       }
       const data = (await response.json()) as SurveysResponse;
       setSurveys(data.surveys);
       setDefaultEmail(data.defaultTargetEmail);
       setDefaultEmailInput(data.defaultTargetEmail);
       setLoading(false);
+      initialFetchAttemptedRef.current = true;
     } catch {
-      const errorMessage = t("failedToLoad");
+      const errorMessage = tRef.current("failedToLoad");
       setError(errorMessage);
-      toast.showError(errorMessage);
+      toastRef.current.showError(errorMessage);
       setLoading(false);
     }
-  }, [token, t, toast]);
+  }, [token]);
 
   useEffect(() => {
     if (!token) {
       setError(t("tokenRequired"));
       setLoading(false);
+      initialFetchAttemptedRef.current = false;
       return;
     }
 
+    initialFetchAttemptedRef.current = false;
     void fetchSurveys();
   }, [fetchSurveys, token, t]);
 
@@ -138,7 +157,7 @@ export default function AdminPage() {
     if (titleText) {
       document.title = `SurWhen: ${titleText}`;
     }
-  });
+  }, [t]);
 
 
   useEffect(() => {
@@ -213,7 +232,7 @@ export default function AdminPage() {
       setEditingHash(null);
       setOriginalTitle("");
       setFormData({ title: "", description: "", reasons: "", targetEmail: "" });
-      await fetchSurveys();
+      await fetchSurveys(true);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t("failedToSave");
       setError(errorMessage);
@@ -251,7 +270,7 @@ export default function AdminPage() {
       }
 
       toast.showSuccess(t("surveyDeleted"));
-      await fetchSurveys();
+      await fetchSurveys(true);
     } catch (err: unknown) {
       const errorMessage = err instanceof Error ? err.message : t("failedToDelete");
       setError(errorMessage);
@@ -471,7 +490,7 @@ export default function AdminPage() {
       setShowUploadModal(false);
       setUploadStrategy("replace");
       setConflictPreference("source");
-      await fetchSurveys();
+      await fetchSurveys(true);
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : t("failedToUpload");
