@@ -1,5 +1,7 @@
 import nodemailer from "nodemailer";
+import type { Transporter } from "nodemailer";
 import { getTranslations } from "next-intl/server";
+import { escape } from "html-escaper";
 import { env } from "~/env";
 import type { Locale } from "~/i18n/config";
 
@@ -13,21 +15,37 @@ export interface EmailSubmission {
   locale: Locale;
 }
 
+// Singleton transporter with connection pooling
+let transporter: Transporter | null = null;
+
+function getTransporter(): Transporter {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: env.SMTP_HOST,
+      port: env.SMTP_PORT,
+      secure: env.SMTP_PORT === 465,
+      auth: {
+        user: env.SMTP_USER,
+        pass: env.SMTP_PASSWORD,
+      },
+      pool: true, // Enable connection pooling
+      maxConnections: 5, // Max concurrent connections
+      maxMessages: 100, // Max messages per connection
+      connectionTimeout: 10000, // 10 seconds
+      greetingTimeout: 5000, // 5 seconds
+      socketTimeout: 15000, // 15 seconds
+    });
+  }
+  return transporter;
+}
+
 export async function sendSurveySubmissionEmail(
   submission: EmailSubmission,
 ): Promise<void> {
   const tEmail = await getTranslations({ locale: submission.locale, namespace: "email" });
   const tSurvey = await getTranslations({ locale: submission.locale, namespace: "survey" });
 
-  const transporter = nodemailer.createTransport({
-    host: env.SMTP_HOST,
-    port: env.SMTP_PORT,
-    secure: env.SMTP_PORT === 465,
-    auth: {
-      user: env.SMTP_USER,
-      pass: env.SMTP_PASSWORD,
-    },
-  });
+  const transporter = getTransporter();
 
   const selectedOptionText = tEmail("selectedOption", { option: submission.reason });
   const greeting = tEmail("greeting");
@@ -51,17 +69,18 @@ ${tSurvey("reason")}: ${submission.reason}
 ${closing}
   `.trim();
 
+  // HTML body with XSS protection using html-escaper
   const htmlBody = `
-    <p>${greeting}</p>
-    <p>${selectedOptionText}</p>
-    <p><strong>${surveyDescriptionLabel}:</strong><br>${submission.surveyDescription}</p>
-    <p><strong>${submissionDetailsLabel}:</strong></p>
+    <p>${escape(greeting)}</p>
+    <p>${escape(selectedOptionText)}</p>
+    <p><strong>${escape(surveyDescriptionLabel)}:</strong><br>${escape(submission.surveyDescription)}</p>
+    <p><strong>${escape(submissionDetailsLabel)}:</strong></p>
     <ul>
-      <li><strong>${tSurvey("name")}:</strong> ${submission.name}</li>
-      ${submission.userEmail ? `<li><strong>${tSurvey("emailLabel")}:</strong> ${submission.userEmail}</li>` : ""}
-      <li><strong>${tSurvey("reason")}:</strong> ${submission.reason}</li>
+      <li><strong>${escape(tSurvey("name"))}:</strong> ${escape(submission.name)}</li>
+      ${submission.userEmail ? `<li><strong>${escape(tSurvey("emailLabel"))}:</strong> ${escape(submission.userEmail)}</li>` : ""}
+      <li><strong>${escape(tSurvey("reason"))}:</strong> ${escape(submission.reason)}</li>
     </ul>
-    <p>${closing}</p>
+    <p>${escape(closing)}</p>
   `;
 
   const mailOptions = {
@@ -102,4 +121,3 @@ ${closing}
     throw new Error("Failed to send email notification");
   }
 }
-
