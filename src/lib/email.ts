@@ -74,6 +74,32 @@ ${closing}
     html: htmlBody,
   };
 
-  await transporter.sendMail(mailOptions);
+  try {
+    const info = await transporter.sendMail(mailOptions);
+
+    console.log("✅ Email sent successfully:", {
+      messageId: info.messageId,
+      accepted: info.accepted,
+      rejected: info.rejected,
+      surveyTitle: submission.surveyTitle,
+      targetEmail: submission.targetEmail,
+      timestamp: new Date().toISOString(),
+    });
+
+    if (info.rejected.length > 0) {
+      throw new Error(
+        `Email rejected by server: ${info.rejected.map(String).join(", ")}`,
+      );
+    }
+  } catch (error) {
+    console.error("❌ Failed to send email:", {
+      error: error instanceof Error ? error.message : String(error),
+      targetEmail: submission.targetEmail,
+      surveyTitle: submission.surveyTitle,
+      timestamp: new Date().toISOString(),
+    });
+
+    throw new Error("Failed to send email notification");
+  }
 }
 

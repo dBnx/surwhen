@@ -101,7 +101,13 @@
   "errors": {
     "missingFields": "Missing required fields",
     "invalidSurveyHash": "Invalid survey hash",
-    "internalServerError": "Internal server error"
+    "internalServerError": "Internal server error",
+    "invalidEmailFormat": "Invalid email format",
+    "nameTooLong": "Name is too long (max 200 characters)",
+    "reasonTooLong": "Reason is too long (max 1000 characters)",
+    "emailTooLong": "Email is too long",
+    "emailDeliveryError": "Unable to send email. Please try again later.",
+    "requestTimeout": "Request timed out. Please try again."
   },
   "notFound": {
     "title": "Invalid Invitation",
@@ -117,4 +123,3 @@
     "closing": "Thank you for your participation!"
   }
 }
-
