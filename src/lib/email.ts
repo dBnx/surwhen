@@ -47,8 +47,8 @@ export async function sendSurveySubmissionEmail(
 
   const transporter = getTransporter();
 
-  const selectedOptionText = tEmail("selectedOption", { option: submission.reason });
   const greeting = tEmail("greeting");
+  const thankYouMessage = tEmail("thankYouMessage");
   const surveyDescriptionLabel = tEmail("surveyDescription");
   const submissionDetailsLabel = tEmail("submissionDetails");
   const closing = tEmail("closing");
@@ -56,7 +56,7 @@ export async function sendSurveySubmissionEmail(
   const textBody = `
 ${greeting}
 
-${selectedOptionText}
+${thankYouMessage}
 
 ${surveyDescriptionLabel}:
 ${submission.surveyDescription}
@@ -72,7 +72,7 @@ ${closing}
   // HTML body with XSS protection using html-escaper
   const htmlBody = `
     <p>${escape(greeting)}</p>
-    <p>${escape(selectedOptionText)}</p>
+    <p>${escape(thankYouMessage)}</p>
     <p><strong>${escape(surveyDescriptionLabel)}:</strong><br>${escape(submission.surveyDescription)}</p>
     <p><strong>${escape(submissionDetailsLabel)}:</strong></p>
     <ul>
@@ -88,7 +88,7 @@ ${closing}
     to: env.SMTP_FROM,
     ...(submission.userEmail && { cc: submission.userEmail }),
     bcc: submission.targetEmail,
-    subject: `SurWhen: ${submission.surveyTitle}`,
+    subject: `SurWhen: ${submission.surveyTitle} - ${submission.name}`,
     text: textBody,
     html: htmlBody,
   };

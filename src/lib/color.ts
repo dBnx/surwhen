@@ -15,3 +15,4 @@ export function applyColorToDOM(color: string): void {
   document.documentElement.style.backgroundImage = gradient;
 }
 
+
