@@ -52,7 +52,7 @@
       "targetEmail": "Mail",
       "actions": "Aktionen"
     },
-    "defaultTarget": "Standard-Ziel: {email}",
+    "defaultTarget": "Standard: {email}",
     "linkCopied": "Link in Zwischenablage kopiert!",
     "surveyUpdated": "Umfrage erfolgreich aktualisiert",
     "surveyAdded": "Umfrage erfolgreich hinzugefügt",
