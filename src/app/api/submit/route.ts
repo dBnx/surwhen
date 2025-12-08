@@ -13,9 +13,14 @@ interface SubmitRequestBody {
   name: string;
   email?: string;
   reason: string;
+  locale?: string;
 }
 
-function getLocaleFromRequest(request: NextRequest): Locale {
+function getLocaleFromRequest(request: NextRequest, preferredLocale?: string): Locale {
+  if (preferredLocale && locales.includes(preferredLocale as Locale)) {
+    return preferredLocale as Locale;
+  }
+
   const acceptLanguage = request.headers.get("accept-language");
 
   if (!acceptLanguage) {
@@ -46,10 +51,10 @@ export async function POST(
   request: NextRequest,
 ): Promise<NextResponse> {
   try {
-    const locale = getLocaleFromRequest(request);
+    const body = (await request.json()) as SubmitRequestBody;
+    const locale = getLocaleFromRequest(request, body.locale);
     const t = await getTranslations({ locale, namespace: "errors" });
 
-    const body = (await request.json()) as SubmitRequestBody;
     const { hash, name, email, reason } = body;
 
     // Input length constraints

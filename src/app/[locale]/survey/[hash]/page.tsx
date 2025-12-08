@@ -2,7 +2,7 @@
 
 import { use, useState, useEffect, useRef } from "react";
 import { notFound } from "next/navigation";
-import { useTranslations } from "next-intl";
+import { useLocale, useTranslations } from "next-intl";
 import type { Survey } from "~/lib/surveys";
 import { useToast } from "~/components/ToastProvider";
 
@@ -75,6 +75,7 @@ interface SurveyPageProps {
 
 export default function SurveyPage({ params }: SurveyPageProps) {
   const { hash } = use(params);
+  const locale = useLocale();
   const t = useTranslations("survey");
   const tCommon = useTranslations("common");
   const toast = useToast();
@@ -140,12 +141,14 @@ export default function SurveyPage({ params }: SurveyPageProps) {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
+          "Accept-Language": locale,
         },
         body: JSON.stringify({
           hash,
           name,
           email: email || undefined,
           reason,
+          locale,
         }),
       });
 

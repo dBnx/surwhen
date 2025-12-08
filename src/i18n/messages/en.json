@@ -117,7 +117,7 @@
   },
   "email": {
     "greeting": "Hello,",
-    "thankYouMessage": "Thank you for your participation! The details of your submission are below.",
+    "thankYouMessage": "Here are the details of your submission.",
     "surveyDescription": "Survey Description",
     "submissionDetails": "Submission Details",
     "closing": "Thank you for your participation!"

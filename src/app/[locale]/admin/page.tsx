@@ -42,6 +42,8 @@ export default function AdminPage() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [localAccentColor, setLocalAccentColor] = useState("#808080");
+  const [persistedAccentColor, setPersistedAccentColor] = useState(DEFAULT_ACCENT_COLOR);
+  const [savingAccent, setSavingAccent] = useState(false);
 
   const [showAddForm, setShowAddForm] = useState(false);
   const [editingHash, setEditingHash] = useState<string | null>(null);
@@ -83,19 +85,15 @@ export default function AdminPage() {
     [token, t],
   );
 
-  const {
-    accentColor,
-    setAccentColor: setAccentColorFromHook,
-    saveAccentColor,
-    saveAccentColorDebounced,
-  } = useAccentColor({
-    onSave: handleSaveAccentColor,
-  });
+  const { accentColor, setAccentColor: setAccentColorFromHook, saveAccentColor } =
+    useAccentColor({
+      onSave: handleSaveAccentColor,
+    });
 
   useEffect(() => {
-    if (accentColor && isValidHexColor(accentColor)) {
-      setLocalAccentColor(accentColor);
-    }
+    if (!accentColor || !isValidHexColor(accentColor)) return;
+    setPersistedAccentColor((prev) => (prev === accentColor ? prev : accentColor));
+    setLocalAccentColor((prev) => (prev === accentColor ? prev : accentColor));
   }, [accentColor]);
 
   const [formData, setFormData] = useState<FormDataState>({
@@ -312,30 +310,35 @@ export default function AdminPage() {
     setLocalAccentColor(newColor);
   };
 
-  const handleColorPickerChange = (newColor: string): void => {
-    saveAccentColorDebounced(newColor);
-  };
-
   const handleUpdateAccentColor = async (): Promise<void> => {
     if (!isValidHexColor(localAccentColor)) {
       toast.showError(t("failedToUpdateAccentColor"));
       return;
     }
+    if (localAccentColor === persistedAccentColor) {
+      return;
+    }
 
     setError(null);
+    setSavingAccent(true);
     try {
       await saveAccentColor(localAccentColor);
+      setPersistedAccentColor(localAccentColor);
+      setLocalAccentColor(localAccentColor);
       toast.showSuccess(t("accentColorUpdated"));
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : t("failedToUpdateAccentColor");
       setError(errorMessage);
       toast.showError(errorMessage);
+    } finally {
+      setSavingAccent(false);
     }
   };
 
   const handleResetAccentColor = async (): Promise<void> => {
     setError(null);
+    setSavingAccent(true);
     try {
       const response = await fetch(`/api/admin/config?token=${token}`, {
         method: "PUT",
@@ -352,12 +355,15 @@ export default function AdminPage() {
 
       setAccentColorFromHook(DEFAULT_ACCENT_COLOR, true);
       setLocalAccentColor(DEFAULT_ACCENT_COLOR);
+      setPersistedAccentColor(DEFAULT_ACCENT_COLOR);
       toast.showSuccess(t("accentColorUpdated"));
     } catch (err: unknown) {
       const errorMessage =
         err instanceof Error ? err.message : t("failedToUpdateAccentColor");
       setError(errorMessage);
       toast.showError(errorMessage);
+    } finally {
+      setSavingAccent(false);
     }
   };
 
@@ -757,10 +763,10 @@ export default function AdminPage() {
               <div className="flex items-center gap-3 flex-1 min-w-0">
                 <input
                   type="color"
-                  value={accentColor}
-                  onChange={(e) => handleColorPickerChange(e.target.value)}
+                  value={localAccentColor}
+                  onChange={(e) => handleAccentColorChange(e.target.value)}
                   className="h-12 w-20 rounded-lg cursor-pointer border-2 border-white/30 bg-white/25 hover:bg-white/35 transition-all flex-shrink-0"
-                  title={accentColor}
+                  title={localAccentColor}
                 />
                 <input
                   type="text"
@@ -784,13 +790,18 @@ export default function AdminPage() {
               <div className="flex flex-wrap gap-2 sm:gap-4">
                 <button
                   onClick={() => void handleUpdateAccentColor()}
-                  disabled={!isValidHexColor(localAccentColor)}
+                  disabled={
+                    !isValidHexColor(localAccentColor) ||
+                    savingAccent ||
+                    localAccentColor === persistedAccentColor
+                  }
                   className="rounded-lg bg-white/25 px-4 py-2 font-medium text-white hover:bg-white/35 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-lg hover:shadow-xl hover:scale-[1.02] active:scale-[0.98] disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:scale-100 flex-shrink-0"
                 >
                   {tCommon("apply")}
                 </button>
                 <button
                   onClick={handleResetAccentColor}
+                  disabled={savingAccent}
                   className="rounded-lg bg-white/15 px-4 py-2 font-medium text-white hover:bg-white/25 focus:outline-none focus:ring-2 focus:ring-white/70 transition-all shadow-md hover:shadow-lg hover:scale-[1.02] active:scale-[0.98] flex-shrink-0 whitespace-nowrap"
                 >
                   {t("accentColorReset")}

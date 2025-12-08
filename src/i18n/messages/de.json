@@ -111,7 +111,7 @@
   },
   "email": {
     "greeting": "Hallo,",
-    "thankYouMessage": "Vielen Dank für Ihre Teilnahme! Die Details Ihrer Einreichung finden Sie unten.",
+    "thankYouMessage": "Hier sind die Details Ihrer Einreichung.",
     "surveyDescription": "Umfragebeschreibung",
     "submissionDetails": "Einreichungsdetails",
     "closing": "Vielen Dank für Ihre Teilnahme!"
