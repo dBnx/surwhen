@@ -113,7 +113,9 @@ export default function AdminPage() {
     }
 
     try {
-      const response = await fetch(`/api/admin/surveys?token=${token}`);
+      const response = await fetch(`/api/admin/surveys?token=${token}`, {
+        cache: "no-store",
+      });
       if (response.status === 401) {
         const errorMessage = tRef.current("invalidToken");
         setError(errorMessage);
@@ -435,7 +437,9 @@ export default function AdminPage() {
 
   const handleDownloadConfig = async (): Promise<void> => {
     try {
-      const response = await fetch(`/api/admin/config?token=${token}`);
+      const response = await fetch(`/api/admin/config?token=${token}`, {
+        cache: "no-store",
+      });
       if (!response.ok) {
         throw new Error(t("failedToDownload"));
       }

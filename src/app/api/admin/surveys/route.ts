@@ -12,6 +12,9 @@ import {
   getSurveysConfigFromFile,
 } from "~/lib/surveys.server";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function validateToken(request: NextRequest): boolean {
   const token =
     request.nextUrl.searchParams.get("token") ??
@@ -48,10 +51,10 @@ export async function GET(
       hash: generateHashFromTitle(survey.title),
     }));
 
-    return NextResponse.json({
-      defaultTargetEmail: config.defaultTargetEmail,
-      surveys,
-    });
+    return NextResponse.json(
+      { defaultTargetEmail: config.defaultTargetEmail, surveys },
+      { headers: { "Cache-Control": "no-store" } },
+    );
   } catch (error: unknown) {
     console.error("Error fetching surveys:", error);
     return NextResponse.json(

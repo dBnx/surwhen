@@ -70,6 +70,7 @@ class BlobStorageBackend implements StorageBackend {
         try {
           const response = await fetch(blob.url, {
             signal: controller.signal,
+            cache: "no-store",
           });
           clearTimeout(timeoutId);
           
