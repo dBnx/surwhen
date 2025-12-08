@@ -53,7 +53,7 @@ export async function GET(
 
     return NextResponse.json(
       { defaultTargetEmail: config.defaultTargetEmail, surveys },
-      { headers: { "Cache-Control": "no-store" } },
+      { headers: { "Cache-Control": "no-store", "CDN-Cache-Control": "no-store" } },
     );
   } catch (error: unknown) {
     console.error("Error fetching surveys:", error);

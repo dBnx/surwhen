@@ -10,6 +10,9 @@ import {
 import type { SurveysConfig, Survey } from "~/lib/surveys";
 import { validateSurvey } from "~/lib/surveys";
 
+export const dynamic = "force-dynamic";
+export const revalidate = 0;
+
 function validateToken(request: NextRequest): boolean {
   const token =
     request.nextUrl.searchParams.get("token") ??
@@ -37,6 +40,8 @@ export async function GET(
       headers: {
         "Content-Type": "application/json",
         "Content-Disposition": 'attachment; filename="surveys.json"',
+        "Cache-Control": "no-store",
+        "CDN-Cache-Control": "no-store",
       },
     });
   } catch (error: unknown) {
